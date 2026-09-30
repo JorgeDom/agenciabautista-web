@@ -75,7 +75,9 @@ const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 
       z = clamp(-r.top / (r.height - vh));           // pinned: progress through the section
     } else {
       const r = map.getBoundingClientRect();
-      z = clamp((vh * 0.95 - r.top) / (vh * 0.75)); // small screens: as the map crosses the screen
+      // small screens: zoom out fully while the map is still comfortably on screen,
+      // well before it (and the section) scrolls away
+      z = clamp((vh * 0.85 - r.top) / (vh * 0.5));
     }
     sec.style.setProperty('--z', z.toFixed(4));
   });

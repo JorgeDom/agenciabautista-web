@@ -26,7 +26,6 @@ const links = [
 </header>
 
 <script>
-  import { onScroll } from '../scripts/scroll';
   const top = document.querySelector<HTMLElement>('.top')!;
   const toggle = top.querySelector<HTMLButtonElement>('.toggle')!;
   const menu = top.querySelector<HTMLElement>('#menu')!;
@@ -37,18 +36,28 @@ const links = [
   menu.addEventListener('click', e => {
     if ((e.target as Element).closest('a')) { menu.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
   });
-  onScroll(vh => {
-    const max = document.documentElement.scrollHeight - vh;
+
+  // The header is the one piece of chrome that must never fail, so it runs its own
+  // scroll listener instead of sharing scroll.ts's — a broken scene elsewhere on the
+  // page can never take the nav down with it.
+  let ticking = false;
+  function update() {
+    const max = document.documentElement.scrollHeight - innerHeight;
     top.style.setProperty('--page', String(max > 0 ? scrollY / max : 0));
     top.classList.toggle('solid', scrollY > 40);
-  });
+    ticking = false;
+  }
+  addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
 </script>
 
 <style>
   .top { position: fixed; inset: 0 0 auto; z-index: 50; color: #fff; transition: background-color .3s; }
   .top.solid { background: rgba(4, 20, 41, .92); backdrop-filter: blur(10px); }
   .bar { display: flex; align-items: center; justify-content: space-between; height: var(--header); }
-  .brand img { height: 42px; width: auto; }
+  .brand img { height: 50px; width: auto; }
   ul { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 32px); }
   a:not(.btn) { text-decoration: none; font-weight: 500; font-size: .98rem; color: var(--d-text); }
   a:not(.btn):hover { color: var(--sky-l); }
@@ -60,7 +69,7 @@ const links = [
   .ship { position: absolute; top: 0; width: 34px; height: 14px; fill: var(--sky-l); left: calc(var(--page, 0) * (100% - 34px)); }
 
   @media (max-width: 720px) {
-    .brand img { height: 34px; }
+    .brand img { height: 40px; }
     .toggle {
       display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 999px;
       background: transparent; color: #fff; border: 1.5px solid var(--d-line); font: 600 .95rem var(--text);

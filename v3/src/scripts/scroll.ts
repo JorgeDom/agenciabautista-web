@@ -17,7 +17,12 @@ export function passProgress(el: Element, vh = innerHeight) {
 
 function run() {
   const vh = innerHeight;
-  for (const f of frames) f(vh);
+  // one scene throwing (e.g. measuring a display:none SVG) must never take the
+  // whole shared loop down with it — that would freeze every other scene's motion,
+  // the fixed header included, for the rest of the page's life.
+  for (const f of frames) {
+    try { f(vh); } catch (err) { console.error(err); }
+  }
   ticking = false;
 }
 function request() {

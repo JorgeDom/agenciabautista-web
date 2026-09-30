@@ -40,47 +40,68 @@ import { steps, media } from '../data/site';
 
   const sec = document.querySelector<HTMLElement>('[data-process]')!;
   const svg = sec.querySelector<SVGSVGElement>('.road')!;
-  const path = svg.querySelector<SVGPathElement>('.trace')!;
-  const truck = svg.querySelector<SVGGElement>('.truck')!;
-  const stops = [...svg.querySelectorAll<SVGGElement>('.stop')];
   const items = [...sec.querySelectorAll<HTMLElement>('.steps li')];
-  const len = path.getTotalLength();
-  path.style.strokeDasharray = `${len}`;
+  const list = sec.querySelector<HTMLElement>('.steps')!;
+  const wide = matchMedia('(min-width: 901px)');
 
-  // put each stop on the road above the centre of its column (1/10, 3/10, ...)
-  const stopAt = stops.map((g, i) => {
-    const targetX = 1200 * (2 * i + 1) / 10;
-    let best = 0, bestD = Infinity;
-    for (let l = 0; l <= len; l += 2) {
-      const d = Math.abs(path.getPointAtLength(l).x - targetX);
-      if (d < bestD) { bestD = d; best = l; }
+  if (wide.matches) {
+    // desktop: the truck drives the road, stops light up as it passes.
+    // Measuring the SVG path only happens here — it's display:none on mobile, and
+    // querying path geometry on a hidden element is unreliable across browsers.
+    const path = svg.querySelector<SVGPathElement>('.trace')!;
+    const truck = svg.querySelector<SVGGElement>('.truck')!;
+    const stops = [...svg.querySelectorAll<SVGGElement>('.stop')];
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = `${len}`;
+
+    // put each stop on the road above the centre of its column (1/10, 3/10, ...)
+    const stopAt = stops.map((g, i) => {
+      const targetX = 1200 * (2 * i + 1) / 10;
+      let best = 0, bestD = Infinity;
+      for (let l = 0; l <= len; l += 2) {
+        const d = Math.abs(path.getPointAtLength(l).x - targetX);
+        if (d < bestD) { bestD = d; best = l; }
+      }
+      const p = path.getPointAtLength(best);
+      g.setAttribute('transform', `translate(${p.x} ${p.y})`);
+      return best / len;
+    });
+
+    function place(f: number) {
+      const l = f * len;
+      const p = path.getPointAtLength(l);
+      const q = path.getPointAtLength(Math.min(len, l + 1));
+      const a = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+      truck.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${a})`);
+      path.style.strokeDashoffset = `${len - l}`;
+      stops.forEach((g, i) => {
+        const on = f >= stopAt[i] - 0.005;
+        g.classList.toggle('on', on);
+        items[i].classList.toggle('on', on);
+      });
     }
-    const p = path.getPointAtLength(best);
-    g.setAttribute('transform', `translate(${p.x} ${p.y})`);
-    return best / len;
-  });
 
-  function place(f: number) {
-    const l = f * len;
-    const p = path.getPointAtLength(l);
-    const q = path.getPointAtLength(Math.min(len, l + 1));
-    const a = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
-    truck.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${a})`);
-    path.style.strokeDashoffset = `${len - l}`;
-    stops.forEach((g, i) => {
-      const on = f >= stopAt[i] - 0.005;
-      g.classList.toggle('on', on);
-      items[i].classList.toggle('on', on);
+    if (reduceMotion()) place(1);
+    else onScroll(vh => {
+      const r = svg.getBoundingClientRect();
+      const band = sec.getBoundingClientRect();
+      // start when the road enters the lower third, arrive as the section starts to leave
+      place(clamp((vh * 0.8 - r.top) / (band.bottom - r.top)));
+    });
+  } else {
+    // mobile: no road, but the rail behind the numbers fills in and each stop
+    // lights up in turn as you scroll past it.
+    const n = items.length;
+    if (reduceMotion()) {
+      list.style.setProperty('--progress', '1');
+      items.forEach(li => li.classList.add('on'));
+    } else onScroll(vh => {
+      const r = list.getBoundingClientRect();
+      const t = clamp((vh * 0.75 - r.top) / (r.height * 0.85));
+      list.style.setProperty('--progress', t.toFixed(4));
+      items.forEach((li, i) => li.classList.toggle('on', t >= i / (n - 1) - 0.03));
     });
   }
-
-  if (reduceMotion()) place(1);
-  else onScroll(vh => {
-    const r = svg.getBoundingClientRect();
-    const band = sec.getBoundingClientRect();
-    // start when the road enters the lower third, arrive as the section starts to leave
-    place(clamp((vh * 0.8 - r.top) / (band.bottom - r.top)));
-  });
 </script>
 
 <style>
@@ -110,12 +131,28 @@ import { steps, media } from '../data/site';
   @media (max-width: 900px) {
     .head { grid-template-columns: 1fr; }
     .road { display: none; }
-    .steps { grid-template-columns: 1fr; gap: 22px; margin-top: 36px; }
+    .steps { position: relative; grid-template-columns: 1fr; gap: 22px; margin-top: 36px; }
     .steps li { text-align: left; display: grid; grid-template-columns: 48px 1fr; column-gap: 16px; }
-    .num {
-      display: grid; place-items: center; grid-row: span 2; width: 48px; height: 48px; border-radius: 50%;
-      background: var(--sky); color: var(--navy); font: 700 1.1rem/1 var(--display);
+
+    /* the rail: a muted line behind the numbers, filled in sky blue as you scroll past each stop */
+    .steps::before, .steps::after { content: ""; position: absolute; left: 23px; top: 24px; bottom: 24px; width: 2px; }
+    .steps::before { background: var(--line); }
+    .steps::after {
+      bottom: auto; height: calc((100% - 48px) * var(--progress, 0)); background: var(--sky);
+      transition: height .15s linear;
     }
+
+    .num {
+      position: relative; z-index: 1;
+      display: grid; place-items: center; grid-row: span 2; width: 48px; height: 48px; border-radius: 50%;
+      background: var(--bg); color: var(--muted); border: 2px solid var(--line);
+      font: 700 1.1rem/1 var(--display);
+      transition: background-color .3s, color .3s, border-color .3s;
+    }
+    .steps li.on .num { background: var(--sky); color: var(--navy); border-color: var(--sky); }
     .steps h3 { color: var(--h); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .steps::after { transition: none; }
   }
 </style>

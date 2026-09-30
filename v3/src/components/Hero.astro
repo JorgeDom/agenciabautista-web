@@ -1,17 +1,22 @@
 ---
 import { site, heroFrames } from '../data/site';
-const { count, lg, sm } = heroFrames;
+const { count, lg } = heroFrames;
 const pad = (n: number) => String(n).padStart(3, '0');
 ---
-<section class="hero" id="inicio" data-hero data-count={count} data-lg={lg} data-sm={sm}>
+<section class="hero" id="inicio" data-hero data-count={count} data-lg={lg}>
   <div class="stage">
-    <!-- scroll-scrubbed ship video: one frame per scroll position, drawn on the canvas -->
+    <!-- scroll-scrubbed ship video: one frame per scroll position, drawn on the canvas.
+         Always the large frame, even as the static mobile poster — it's one image,
+         not 96, so the extra weight is worth it for a poster that isn't soft. -->
     <picture class="poster" aria-hidden="true">
-      <source media="(max-width: 720px)" srcset={`${sm}/${pad(1)}.webp`} />
       <img src={`${lg}/${pad(1)}.webp`} alt="" width="1280" height="720" fetchpriority="high" />
     </picture>
     <canvas class="film" aria-hidden="true"></canvas>
     <div class="shade" aria-hidden="true"></div>
+
+    <div class="logo-intro" aria-hidden="true">
+      <img class="logo-img" src="/img/logo-agencia-bautista.png" alt="" width="2172" height="724" />
+    </div>
 
     <div class="wrap copy">
       <p class="kicker">Despachos aduaneros y logística en Paraguay</p>
@@ -42,7 +47,7 @@ const pad = (n: number) => String(n).padStart(3, '0');
   const ctx = canvas.getContext('2d')!;
   const count = Number(hero.dataset.count);
   const small = matchMedia('(max-width: 720px)').matches;
-  const base = small ? hero.dataset.sm! : hero.dataset.lg!;
+  const base = hero.dataset.lg!;
   const frames: (HTMLImageElement | null)[] = Array(count).fill(null);
   let want = 0, drawn = -1;
 
@@ -94,18 +99,33 @@ const pad = (n: number) => String(n).padStart(3, '0');
     await Promise.all(workers);
   }
 
+  // Scrubbing the ship across a 3-screen-tall pinned section works on a trackpad or a
+  // mouse wheel, but on a phone it means a long, janky swipe before anything happens.
+  // Mobile gets the static poster frame instead — no scroll math, no 96-frame download.
   if (!reduceMotion()) {
-    hero.classList.add('scrub');
-    addEventListener('resize', size);
-    size();
-    preload();
-    onScroll(vh => {
-      const r = hero.getBoundingClientRect();
-      const p = clamp(-r.top / (r.height - vh));
-      hero.style.setProperty('--p', p.toFixed(4));
-      want = Math.round(p * (count - 1));
-      draw();
-    });
+    if (!small) {
+      hero.classList.add('scrub');
+      addEventListener('resize', size);
+      size();
+      preload();
+      onScroll(vh => {
+        const r = hero.getBoundingClientRect();
+        const p = clamp(-r.top / (r.height - vh));
+        hero.style.setProperty('--p', p.toFixed(4));
+        want = Math.round(p * (count - 1));
+        draw();
+      });
+    } else {
+      // mobile isn't pinned, so the hero is just one screen tall — --p tracks its own
+      // natural scroll-through (still used for the exit fade below), while --pe is a
+      // much tighter window so the logo-to-text handoff reacts to the first hint of a
+      // scroll instead of needing a big chunk of the screen.
+      onScroll(vh => {
+        const r = hero.getBoundingClientRect();
+        hero.style.setProperty('--p', clamp(-r.top / r.height).toFixed(4));
+        hero.style.setProperty('--pe', clamp(-r.top / 120).toFixed(4));
+      });
+    }
   }
 </script>
 
@@ -130,6 +150,15 @@ const pad = (n: number) => String(n).padStart(3, '0');
       linear-gradient(0deg, rgba(4, 20, 41, .9) 0%, rgba(4, 20, 41, 0) 22%);
   }
 
+  .logo-intro {
+    position: absolute; inset: 0; z-index: 2; display: none;
+    place-items: center; pointer-events: none;
+  }
+  .logo-img {
+    width: clamp(285px, 42vw, 675px); height: auto;
+    filter: drop-shadow(0 4px 24px rgba(4, 20, 41, .55));
+  }
+
   .copy {
     position: relative; z-index: 2;
     padding-top: calc(var(--header) + clamp(28px, 6vh, 72px));
@@ -148,16 +177,48 @@ const pad = (n: number) => String(n).padStart(3, '0');
   .lead { max-width: 32rem; margin-top: 1.4rem; font-size: 1.12rem; color: var(--d-text); text-shadow: 0 1px 12px rgba(4, 20, 41, .7); }
   .cta { margin-top: 1.6rem; }
 
+  /* Desktop: entrance choreography is tied to scroll (--p). The logo owns the center
+     on load, then hands off to the text — kicker, headline, lede, buttons, top to
+     bottom — all resolved by p=.5, the ship's midpoint, so you're never just waiting
+     for it to finish sailing. */
+  @media (prefers-reduced-motion: no-preference) and (min-width: 721px) {
+    .logo-intro { display: grid; opacity: calc(1 - clamp(0, var(--p, 0) * 6.6667, 1)); }
+    .logo-img { animation: logo-in .9s cubic-bezier(.2, .7, .2, 1) both; }
+
+    .kicker { opacity: calc(clamp(0, (var(--p, 0) - .08) * 5, 1)); transform: translateY(calc((1 - clamp(0, (var(--p, 0) - .08) * 5, 1)) * 18px)); }
+    h1      { opacity: calc(clamp(0, (var(--p, 0) - .15) * 5, 1)); transform: translateY(calc((1 - clamp(0, (var(--p, 0) - .15) * 5, 1)) * 18px)); }
+    .lead   { opacity: calc(clamp(0, (var(--p, 0) - .22) * 5, 1)); transform: translateY(calc((1 - clamp(0, (var(--p, 0) - .22) * 5, 1)) * 18px)); }
+    .cta    { opacity: calc(clamp(0, (var(--p, 0) - .30) * 5, 1)); transform: translateY(calc((1 - clamp(0, (var(--p, 0) - .30) * 5, 1)) * 18px)); }
+  }
+
+  /* Mobile: no scroll-scrubbing. The logo-to-text handoff reacts to --pe, a ~120px
+     window, so the first hint of a scroll is enough to trigger it — not a fraction
+     of the whole screen. The exit fade lower down still uses --p (the hero's full
+     scroll-through), so the text stays put until the hero is actually leaving. */
+  @media (prefers-reduced-motion: no-preference) and (max-width: 720px) {
+    .logo-intro { display: grid; opacity: calc(1 - clamp(0, var(--pe, 0) * 4, 1)); }
+    .logo-img { animation: logo-in .8s cubic-bezier(.2, .7, .2, 1) both; }
+
+    .kicker { opacity: calc(clamp(0, (var(--pe, 0) - .10) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .10) * 7.14, 1)) * 18px)); }
+    h1      { opacity: calc(clamp(0, (var(--pe, 0) - .18) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .18) * 7.14, 1)) * 18px)); }
+    .lead   { opacity: calc(clamp(0, (var(--pe, 0) - .26) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .26) * 7.14, 1)) * 18px)); }
+    .cta    { opacity: calc(clamp(0, (var(--pe, 0) - .34) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .34) * 7.14, 1)) * 18px)); }
+  }
+
+  @keyframes logo-in {
+    from { opacity: 0; transform: scale(.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
   .base {
     position: absolute; z-index: 2; left: 0; right: 0; bottom: 22px; margin-inline: auto;
-    display: flex; justify-content: space-between; gap: 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
     font: 400 .8rem/1 var(--stencil); letter-spacing: .12em; color: var(--d-muted);
   }
   .hint { opacity: calc(1 - var(--p, 0) * 6); }
   .hero:not(.scrub) .hint { display: none; }
 
   @media (max-width: 720px) {
-    .hero.scrub { height: 220vh; }
     .copy { padding-top: calc(var(--header) + 24px); }
     .lead { font-size: 1rem; }
   }
