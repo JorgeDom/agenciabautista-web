@@ -1,0 +1,76 @@
+---
+const links = [
+  { href: '#nosotros', label: 'Nosotros' },
+  { href: '#servicios', label: 'Servicios' },
+  { href: '#proceso', label: 'Proceso' },
+  { href: '#sectores', label: 'Clientes' },
+];
+---
+<header class="top">
+  <div class="bar wrap">
+    <a class="brand" href="#inicio" aria-label="Agencia Bautista, inicio">
+      <img src="/img/logo-agencia-bautista.png" alt="Agencia Bautista, Despacho Aduanero" width="2172" height="724">
+    </a>
+    <nav aria-label="Principal">
+      <button class="toggle" aria-expanded="false" aria-controls="menu">Menú</button>
+      <ul id="menu">
+        {links.map(l => <li><a href={l.href}>{l.label}</a></li>)}
+        <li><a class="btn btn--sky btn--sm" href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="route" aria-hidden="true">
+    <span class="done"></span>
+    <svg class="ship" viewBox="0 0 40 16"><path d="M2 9h36l-5 6H7z" /><rect x="10" y="3" width="6" height="5" /><rect x="17" y="3" width="6" height="5" /><rect x="24" y="5" width="6" height="3" /></svg>
+  </div>
+</header>
+
+<script>
+  import { onScroll } from '../scripts/scroll';
+  const top = document.querySelector<HTMLElement>('.top')!;
+  const toggle = top.querySelector<HTMLButtonElement>('.toggle')!;
+  const menu = top.querySelector<HTMLElement>('#menu')!;
+  toggle.addEventListener('click', () => {
+    const open = menu.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  menu.addEventListener('click', e => {
+    if ((e.target as Element).closest('a')) { menu.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+  });
+  onScroll(vh => {
+    const max = document.documentElement.scrollHeight - vh;
+    top.style.setProperty('--page', String(max > 0 ? scrollY / max : 0));
+    top.classList.toggle('solid', scrollY > 40);
+  });
+</script>
+
+<style>
+  .top { position: fixed; inset: 0 0 auto; z-index: 50; color: #fff; transition: background-color .3s; }
+  .top.solid { background: rgba(4, 20, 41, .92); backdrop-filter: blur(10px); }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: var(--header); }
+  .brand img { height: 42px; width: auto; }
+  ul { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 32px); }
+  a:not(.btn) { text-decoration: none; font-weight: 500; font-size: .98rem; color: var(--d-text); }
+  a:not(.btn):hover { color: var(--sky-l); }
+  .toggle { display: none; }
+
+  .route { position: relative; height: 16px; margin-top: -8px; }
+  .route::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--d-line); }
+  .done { position: absolute; left: 0; top: calc(50% - 1px); height: 2px; width: calc(var(--page, 0) * 100%); background: var(--sky); }
+  .ship { position: absolute; top: 0; width: 34px; height: 14px; fill: var(--sky-l); left: calc(var(--page, 0) * (100% - 34px)); }
+
+  @media (max-width: 720px) {
+    .brand img { height: 34px; }
+    .toggle {
+      display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 999px;
+      background: transparent; color: #fff; border: 1.5px solid var(--d-line); font: 600 .95rem var(--text);
+    }
+    ul {
+      position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0;
+      background: var(--deep); padding: 8px var(--gutter) 20px; border-bottom: 1px solid var(--d-line);
+    }
+    ul:not(.open) { display: none; }
+    li a:not(.btn) { display: block; padding: 14px 0; border-bottom: 1px solid var(--d-line); }
+    li .btn { margin-top: 14px; width: 100%; }
+  }
+</style>

@@ -1,0 +1,7 @@
+---
+// Years in business (or the current year with `current`). Build-time value, refreshed in the browser by Base.astro.
+import { site } from '../data/site';
+interface Props { current?: boolean }
+const { current = false } = Astro.props;
+---
+{current ? <span data-year>{site.year}</span> : <span data-years>{site.years}</span>}

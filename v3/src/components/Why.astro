@@ -1,0 +1,70 @@
+---
+import { site, reasons } from '../data/site';
+import Copy from './Copy.astro';
+import Years from './Years.astro';
+
+// Lucide icons (src/icons), inlined so they inherit the brand colour. Same order as `reasons` in site.ts.
+import badgeCheck from '../icons/badge-check.svg?raw';
+import handshake from '../icons/handshake.svg?raw';
+import zap from '../icons/zap.svg?raw';
+import landmark from '../icons/landmark.svg?raw';
+import shieldCheck from '../icons/shield-check.svg?raw';
+
+const clean = (svg: string) => svg
+  .replace(/\s(width|height|class)="[^"]*"/g, '')
+  .replace('<svg', '<svg aria-hidden="true" focusable="false"');
+const icons = [badgeCheck, handshake, zap, landmark, shieldCheck].map(clean);
+---
+<section class="why light" id="por-que" data-why>
+  <div class="wrap grid">
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <defs><path id="ring" d="M100 100 m-78 0 a78 78 0 1 1 156 0 a78 78 0 1 1 -156 0" /></defs>
+        <text><textPath href="#ring">CONFIANZA QUE CRUZA FRONTERAS · DESDE {site.founded} · </textPath></text>
+      </svg>
+      <span class="num"><Years /><small>años</small></span>
+    </div>
+    <div>
+      <h2 class="h2">¿Por qué elegirnos?</h2>
+      <ul class="reasons">
+        {reasons.map((r, i) => (
+          <li><span class="icon" set:html={icons[i]} /><strong><Copy text={r} /></strong></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onScroll, passProgress } from '../scripts/scroll';
+  const el = document.querySelector<HTMLElement>('[data-why]')!;
+  onScroll(vh => el.style.setProperty('--p', passProgress(el, vh).toFixed(4)));
+</script>
+
+<style>
+  .why { background: var(--alt); color: var(--body); padding-block: var(--section); }
+  .grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(40px, 7vw, 110px); align-items: center; }
+  .grid > * { min-width: 0; }
+  .seal { position: relative; aspect-ratio: 1; max-width: 360px; width: 100%; justify-self: center; }
+  .seal svg { width: 100%; height: 100%; overflow: visible; transform: rotate(calc(var(--p, 0) * 300deg)); }
+  .seal text { font: 700 13.4px var(--display); letter-spacing: .14em; fill: var(--sky-d); }
+  .num {
+    position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+    font: 900 clamp(4.5rem, 10vw, 7rem)/.85 var(--display); font-stretch: 125%; color: var(--h);
+  }
+  .num small { display: block; font: 600 1.05rem/1 var(--text); color: var(--muted); margin-top: .6rem; }
+  .h2 { margin-bottom: 1.8rem; }
+  .reasons li {
+    display: grid; grid-template-columns: 40px 1fr; gap: 18px; align-items: center;
+    padding-block: 18px; border-top: 1px solid var(--line);
+  }
+  .reasons li:last-child { border-bottom: 1px solid var(--line); }
+  .icon { display: grid; place-items: center; width: 40px; height: 40px; color: var(--sky-d); }
+  .icon :global(svg) { width: 30px; height: 30px; stroke-width: 1.8; }
+  .reasons strong { font-weight: 600; font-size: 1.12rem; color: var(--h); }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .seal { max-width: 260px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .seal svg { transform: none; } }
+</style>

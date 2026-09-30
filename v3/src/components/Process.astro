@@ -1,0 +1,121 @@
+---
+import { steps, media } from '../data/site';
+---
+<section class="process light" id="proceso" data-process>
+  <div class="wrap">
+    <header class="head">
+      <h2 class="h2">Nuestro proceso de trabajo</h2>
+      <p class="lede">Cinco etapas, con una persona de referencia en cada una.</p>
+    </header>
+
+    <svg class="road" viewBox="0 0 1200 220" aria-hidden="true">
+      <path class="asphalt" d="M20 160 C160 160 200 60 330 60 S520 170 620 150 S780 50 880 60 S1060 160 1180 120" />
+      <path class="lane" d="M20 160 C160 160 200 60 330 60 S520 170 620 150 S780 50 880 60 S1060 160 1180 120" />
+      <path class="trace" d="M20 160 C160 160 200 60 330 60 S520 170 620 150 S780 50 880 60 S1060 160 1180 120" />
+      {steps.map((_, i) => (
+        <g class="stop"><circle r="17" /><text dy="6">{i + 1}</text></g>
+      ))}
+      <g class="truck">
+        {media.truck
+          ? <image href={media.truck} x="-96" y="-18" width="156" height="36" preserveAspectRatio="xMidYMid meet" />
+          : <g class="body">
+          <rect class="trailer" x="-54" y="-12" width="64" height="24" rx="2" />
+          <path class="ribs" d="M-46 -12v24M-38 -12v24M-30 -12v24M-22 -12v24M-14 -12v24M-6 -12v24M2 -12v24" />
+          <rect class="cab" x="13" y="-11" width="20" height="22" rx="4" />
+          <rect class="glass" x="27" y="-8" width="4" height="16" rx="1" />
+        </g>}
+      </g>
+    </svg>
+
+    <ol class="steps">
+      {steps.map((s, i) => (
+        <li><span class="num">{i + 1}</span><h3>{s.title}</h3><p>{s.detail}</p></li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<script>
+  import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
+
+  const sec = document.querySelector<HTMLElement>('[data-process]')!;
+  const svg = sec.querySelector<SVGSVGElement>('.road')!;
+  const path = svg.querySelector<SVGPathElement>('.trace')!;
+  const truck = svg.querySelector<SVGGElement>('.truck')!;
+  const stops = [...svg.querySelectorAll<SVGGElement>('.stop')];
+  const items = [...sec.querySelectorAll<HTMLElement>('.steps li')];
+  const len = path.getTotalLength();
+  path.style.strokeDasharray = `${len}`;
+
+  // put each stop on the road above the centre of its column (1/10, 3/10, ...)
+  const stopAt = stops.map((g, i) => {
+    const targetX = 1200 * (2 * i + 1) / 10;
+    let best = 0, bestD = Infinity;
+    for (let l = 0; l <= len; l += 2) {
+      const d = Math.abs(path.getPointAtLength(l).x - targetX);
+      if (d < bestD) { bestD = d; best = l; }
+    }
+    const p = path.getPointAtLength(best);
+    g.setAttribute('transform', `translate(${p.x} ${p.y})`);
+    return best / len;
+  });
+
+  function place(f: number) {
+    const l = f * len;
+    const p = path.getPointAtLength(l);
+    const q = path.getPointAtLength(Math.min(len, l + 1));
+    const a = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+    truck.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${a})`);
+    path.style.strokeDashoffset = `${len - l}`;
+    stops.forEach((g, i) => {
+      const on = f >= stopAt[i] - 0.005;
+      g.classList.toggle('on', on);
+      items[i].classList.toggle('on', on);
+    });
+  }
+
+  if (reduceMotion()) place(1);
+  else onScroll(vh => {
+    const r = svg.getBoundingClientRect();
+    const band = sec.getBoundingClientRect();
+    // start when the road enters the lower third, arrive as the section starts to leave
+    place(clamp((vh * 0.8 - r.top) / (band.bottom - r.top)));
+  });
+</script>
+
+<style>
+  .process { background: var(--bg); color: var(--body); padding-block: var(--section); }
+  .head { display: grid; grid-template-columns: auto 1fr; gap: 16px 56px; align-items: end; }
+
+  .road { display: block; width: 100%; height: auto; margin-top: clamp(24px, 4vw, 48px); overflow: visible; }
+  .asphalt { fill: none; stroke: var(--navy); stroke-width: 40; stroke-linecap: round; }
+  .lane { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 2; stroke-dasharray: 10 12; }
+  .trace { fill: none; stroke: var(--sky); stroke-width: 4; stroke-linecap: round; }
+  .stop circle { fill: var(--bg); stroke: var(--navy); stroke-width: 3; transition: fill .3s; }
+  .stop text { text-anchor: middle; font: 700 17px var(--display); fill: var(--navy); }
+  .stop.on circle { fill: var(--sky); }
+  .trailer { fill: var(--sky); }
+  .ribs { stroke: rgba(7, 30, 61, .3); stroke-width: 1.5; }
+  .cab { fill: var(--steel); stroke: var(--navy); stroke-width: 1.5; }
+  .glass { fill: var(--navy); }
+  .truck .body { transform: translateY(-1px); }
+
+  .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; margin-top: 20px; }
+  .steps li { text-align: center; }
+  .num { display: none; }
+  .steps h3 { font: 700 1.1rem/1.2 var(--display); font-stretch: 105%; color: var(--muted); transition: color .3s; }
+  .steps li.on h3 { color: var(--h); }
+  .steps p { color: var(--muted); font-size: .96rem; margin-top: 6px; }
+
+  @media (max-width: 900px) {
+    .head { grid-template-columns: 1fr; }
+    .road { display: none; }
+    .steps { grid-template-columns: 1fr; gap: 22px; margin-top: 36px; }
+    .steps li { text-align: left; display: grid; grid-template-columns: 48px 1fr; column-gap: 16px; }
+    .num {
+      display: grid; place-items: center; grid-row: span 2; width: 48px; height: 48px; border-radius: 50%;
+      background: var(--sky); color: var(--navy); font: 700 1.1rem/1 var(--display);
+    }
+    .steps h3 { color: var(--h); }
+  }
+</style>

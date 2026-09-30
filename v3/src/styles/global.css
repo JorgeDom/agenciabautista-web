@@ -1,0 +1,112 @@
+/* Agencia Bautista — v3 "Terminal"
+   Tokens del brief + las piezas compartidas (botones, contenedor, placeholder). */
+
+:root {
+  --navy: #071E3D;
+  --deep: #041429;
+  --card: #0B2F5B;
+  --sky: #1BA4F0;
+  --sky-l: #4DB8F4;
+  --sky-d: #0878BA;
+  --steel: #E7EFF7;
+
+  --bg: #FFFFFF;
+  --alt: #F2F6FA;
+  --line: #D3DEE9;
+  --h: #0B1B2F;
+  --body: #22354D;
+  --muted: #4A5C72;
+
+  --d-text: #E3ECF6;
+  --d-muted: #B4C6DB;
+  --d-line: rgba(143, 210, 248, .22);
+  --wa: #25D366;
+
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --text: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --stencil: "Saira Stencil One", Impact, "Arial Black", sans-serif;
+
+  --gutter: clamp(16px, 5vw, 64px);
+  --max: 1200px;
+  --section: clamp(88px, 12vw, 160px);
+  --header: 76px;
+}
+@media (max-width: 720px) { :root { --header: 64px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--header); }
+body {
+  margin: 0; background: var(--navy); color: var(--d-text);
+  font: 400 1.0625rem/1.6 var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p, figure, blockquote, dl, dd { margin: 0; }
+
+.wrap { width: 100%; max-width: calc(var(--max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
+.skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--sky); color: var(--navy); padding: 8px 14px; border-radius: 6px; }
+.skip:focus { left: 16px; }
+:focus-visible { outline: 3px solid var(--sky-l); outline-offset: 3px; border-radius: 4px; }
+
+.h2 {
+  font: 800 clamp(2.1rem, 4.6vw, 3.6rem)/1 var(--display);
+  font-stretch: 112%; letter-spacing: -.01em; color: #fff; text-wrap: balance;
+}
+.light .h2 { color: var(--h); }
+.lede { color: var(--d-muted); max-width: 32rem; }
+.light .lede { color: var(--muted); }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 1.4rem; border-radius: 999px; border: 1.5px solid transparent;
+  font: 600 1rem/1 var(--text); text-decoration: none; white-space: nowrap;
+  transition: background-color .2s, border-color .2s, color .2s;
+}
+.btn--sm { min-height: 40px; padding: 0 1.1rem; font-size: .95rem; }
+.btn--sky { background: var(--sky); color: var(--navy); }
+.btn--sky:hover { background: var(--sky-l); }
+.btn--ghost { border-color: var(--d-line); color: #fff; }
+.btn--ghost:hover { border-color: var(--sky-l); color: var(--sky-l); }
+.btn--wa { background: var(--wa); color: var(--deep); }
+.btn--wa:hover { background: #4ee082; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* the shipping container, used by the crane yard and the hero */
+.box {
+  --c: var(--card); --ink: #fff;
+  position: relative;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .08) 0 3px, transparent 3px 12px), var(--c);
+  color: var(--ink); border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .12), inset 0 4px 0 rgba(255, 255, 255, .12);
+}
+.box::after {
+  content: ""; position: absolute; top: 8px; bottom: 8px; right: 10px; width: 26px;
+  border-left: 2px solid rgba(0, 0, 0, .18);
+  background:
+    linear-gradient(currentColor, currentColor) 7px 0 / 2px 100% no-repeat,
+    linear-gradient(currentColor, currentColor) 17px 0 / 2px 100% no-repeat;
+  opacity: .35;
+}
+.box .code { font: 400 .8rem/1 var(--stencil); letter-spacing: .08em; opacity: .85; }
+.box--sky { --c: var(--sky); --ink: var(--navy); }
+.box--card { --c: var(--card); --ink: #fff; }
+.box--white { --c: var(--steel); --ink: var(--navy); }
+.box--deep { --c: var(--deep); --ink: #fff; box-shadow: inset 0 0 0 1px var(--d-line), inset 0 4px 0 rgba(255, 255, 255, .06); }
+
+/* image placeholder: swap for <img> when photos arrive */
+.ph {
+  position: relative; display: grid; place-items: center; overflow: hidden;
+  background:
+    repeating-linear-gradient(135deg, rgba(143, 210, 248, .07) 0 2px, transparent 2px 14px),
+    linear-gradient(160deg, var(--card), var(--deep));
+}
+.ph span { color: var(--d-muted); font-size: .8rem; text-align: center; padding: 1rem; line-height: 1.4; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }
+}

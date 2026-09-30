@@ -1,0 +1,168 @@
+---
+import { services, containerCode, media } from '../data/site';
+---
+<section class="services" id="servicios" data-crane>
+  <div class="pin">
+    <div class="wrap">
+      <header class="head">
+        <h2 class="h2">Servicios</h2>
+        <p class="lede">Soluciones integrales para que tu operación sea segura, eficiente y cumpla con la normativa vigente.</p>
+      </header>
+      <div class:list={['yard', { photo: media.crane }]}>
+        {media.crane && <img class="crane" src={media.crane} alt="" width="2400" height="800" aria-hidden="true" />}
+        <div class="gantry" aria-hidden="true">
+          <span class="beam"></span>
+          <span class="trolley"><span class="cable"></span><span class="spreader"></span></span>
+        </div>
+        <ol class="slots">
+          {services.map((s, i) => (
+            <li class="slot">
+              <div class={`box box--${s.tone} cont`}>
+                <span class="code">{containerCode(i)}</span>
+                <div>
+                  <h3>{s.title}</h3>
+                  <p>{s.detail}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
+
+  const sec = document.querySelector<HTMLElement>('[data-crane]')!;
+  const yard = sec.querySelector<HTMLElement>('.yard')!;
+  const trolley = sec.querySelector<HTMLElement>('.trolley')!;
+  const slots = [...sec.querySelectorAll<HTMLElement>('.slot')];
+  const boxes = slots.map(s => s.querySelector<HTMLElement>('.cont')!);
+  const list = sec.querySelector<HTMLElement>('.slots')!;
+  const photo = yard.classList.contains('photo');
+  const wide = matchMedia('(min-width: 901px)');
+  let geo: { x: number; top: number; h: number }[] = [];
+  let rail = 42;
+
+  function measure() {
+    sec.classList.toggle('staged', wide.matches && !reduceMotion());
+    // slot positions in yard coordinates (the list is absolutely placed inside the crane photo)
+    const bx = photo ? list.offsetLeft : 0, by = photo ? list.offsetTop : 0;
+    geo = slots.map(s => ({ x: bx + s.offsetLeft + s.offsetWidth / 2, top: by + s.offsetTop, h: s.offsetHeight }));
+    rail = trolley.offsetTop + trolley.offsetHeight + 6; // where the spreader hangs from
+  }
+
+  onScroll(vh => {
+    if (!sec.classList.contains('staged')) {
+      // small screens: containers slide in from alternating sides
+      if (reduceMotion()) return;
+      boxes.forEach((b, i) => {
+        const r = b.getBoundingClientRect();
+        const t = 1 - clamp((vh * 1.02 - r.top) / (vh * 0.42));
+        b.style.transform = `translateX(${t * (i % 2 ? 60 : -60)}vw) rotate(${t * (i % 2 ? -4 : 4)}deg)`;
+      });
+      return;
+    }
+    const r = sec.getBoundingClientRect();
+    const n = boxes.length;
+    const k = clamp(-r.top / (r.height - vh)) * (n + 0.5);
+    let active = Math.min(n - 1, Math.floor(k));
+    boxes.forEach((b, i) => {
+      const d = clamp(k - i);
+      const e = 1 - Math.pow(1 - d, 3);
+      const g = geo[i];
+      // drawn crane: lowered in from above the yard. Photo crane: hoisted just under the beam, then lowered.
+      const start = photo ? rail + 14 - g.top : -(g.top + g.h + 12);
+      const ty = start * (1 - e);
+      b.style.transform = `translateY(${ty.toFixed(1)}px)`;
+      if (photo) b.style.visibility = d > 0 ? 'visible' : 'hidden';
+      if (i === active) {
+        const cable = Math.max(14, g.top + ty - rail);
+        trolley.style.setProperty('--cable', cable + 'px');
+      }
+    });
+    const parked = k >= n;
+    const x = parked ? yard.clientWidth - 40 : geo[active].x;
+    trolley.style.setProperty('--x', x + 'px');
+    trolley.classList.toggle('parked', parked);
+  }, measure);
+</script>
+
+<style>
+  .services { background: var(--navy); }
+  .pin { padding-block: var(--section); }
+  .head { display: grid; grid-template-columns: auto 1fr; gap: 16px 56px; align-items: end; margin-bottom: clamp(28px, 4vw, 48px); }
+  .head > * { min-width: 0; }
+
+  .yard { position: relative; }
+  .gantry { display: none; }
+  .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 18px; }
+  .cont {
+    display: grid; align-content: space-between; gap: 18px;
+    min-height: 168px; padding: 16px 64px 18px 20px; height: 100%;
+    will-change: transform;
+  }
+  .cont h3 { font: 800 clamp(1.45rem, 2.4vw, 1.9rem)/1.12 var(--display); font-stretch: 112%; }
+  .cont p { font-size: 1.08rem; margin-top: 6px; opacity: .9; }
+
+  /* ---- staged: pinned yard with the gantry crane (wide screens) ---- */
+  .services.staged { height: 320vh; }
+  .staged .pin {
+    position: sticky; top: 0; min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding-block: calc(var(--header) + 16px) 32px;
+  }
+  .staged .yard { padding-top: 96px; overflow: hidden; }
+  .staged .gantry { display: block; position: absolute; inset: 0 0 auto; height: 60px; z-index: 3; }
+  .beam {
+    position: absolute; left: 0; right: 0; top: 16px; height: 14px;
+    background:
+      repeating-linear-gradient(60deg, transparent 0 9px, rgba(4, 20, 41, .55) 9px 12px),
+      var(--sky);
+    border-radius: 2px;
+  }
+  .trolley {
+    position: absolute; top: 10px; left: var(--x, 0); width: 64px; height: 26px; margin-left: -32px;
+    background: var(--steel); border-radius: 3px; box-shadow: inset 0 -4px 0 rgba(4, 20, 41, .25);
+    transition: left .55s cubic-bezier(.5, 0, .2, 1);
+  }
+  .cable {
+    position: absolute; left: 50%; top: 26px; width: 2px; margin-left: -1px;
+    height: var(--cable, 20px); background: var(--steel);
+  }
+  .spreader {
+    position: absolute; left: 50%; top: calc(26px + var(--cable, 20px)); width: 120px; height: 6px; margin-left: -60px;
+    background: var(--steel); border-radius: 2px;
+  }
+  .parked .cable, .parked .spreader { opacity: 0; }
+
+  /* ---- real crane photo (grua.webp, 1493×924) ----
+     Measured on the image: beam bottom at 22% of its height, inner leg faces at 11.3% and 88.5%.
+     The yard takes the photo's aspect ratio and the containers sit between the legs. */
+  .crane { display: none; }
+  .staged .photo {
+    aspect-ratio: 1493 / 924; padding-top: 0; overflow: visible;
+    width: min(100%, calc((100vh - var(--header) - 190px) * 1.616)); margin-inline: auto;
+  }
+  .staged .photo .crane { display: block; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+  .staged .photo .gantry { inset: 0; height: auto; }
+  .staged .photo .beam { display: none; }
+  .staged .photo .trolley { top: 22%; width: 72px; margin-left: -36px; background: var(--sky); }
+  .staged .photo .cable, .staged .photo .spreader { background: #cfdbe8; }
+  .staged .photo .slots {
+    position: absolute; left: 14%; right: 14.5%; top: 33%; bottom: 2%;
+    grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px 12px;
+  }
+  .staged .photo .cont { z-index: 2; min-height: 0; padding: 9px 50px 10px 16px; gap: 4px; }
+  .staged .photo .cont h3 { font-size: clamp(1.2rem, 1.75vw, 1.55rem); line-height: 1.1; }
+  .staged .photo .cont p { font-size: clamp(.95rem, 1.1vw, 1.05rem); line-height: 1.35; margin-top: 4px; }
+  .staged .photo .cont .code { font-size: .72rem; }
+  .staged .photo .cont::after { top: 6px; bottom: 6px; }
+
+  @media (max-width: 900px) {
+    .head { grid-template-columns: 1fr; }
+    .slots { grid-template-columns: 1fr; }
+  }
+</style>

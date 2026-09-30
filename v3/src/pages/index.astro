@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import Services from '../components/Services.astro';
+import Why from '../components/Why.astro';
+import Process from '../components/Process.astro';
+import Sectors from '../components/Sectors.astro';
+import Contact from '../components/Contact.astro';
+import { site } from '../data/site';
+---
+<Base
+  title="Agencia Bautista · Despacho Aduanero en Asunción"
+  description={`Despachos aduaneros y logística en Paraguay desde ${site.founded}. Importación, exportación, clasificación arancelaria, licencias y representación ante Aduanas.`}
+>
+  <Header />
+  <main id="contenido">
+    <Hero />
+    <About />
+    <Services />
+    <Why />
+    <Process />
+    <Sectors />
+    <Contact />
+  </main>
+</Base>

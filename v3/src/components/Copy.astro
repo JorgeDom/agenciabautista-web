@@ -1,0 +1,7 @@
+---
+// Renders copy from site.ts, replacing each {years} token with a live <Years />.
+import Years from './Years.astro';
+interface Props { text: string }
+const parts = Astro.props.text.split('{years}');
+---
+{parts.map((p, i) => <>{i > 0 && <Years />}{p}</>)}

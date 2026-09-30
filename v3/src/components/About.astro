@@ -1,0 +1,139 @@
+---
+import { site, about } from '../data/site';
+import Copy from './Copy.astro';
+import Years from './Years.astro';
+import { W, H, land, coast, borders, paraguay, asuncion, routes } from '../data/worldmap';
+
+// Zoom: starts close on Asunción (centred), ends on the whole world. Driven by --z (0 → 1).
+const cx = W / 2 - asuncion.x, cy = H / 2 - asuncion.y;
+const zoom = `transform-origin:${asuncion.x}px ${asuncion.y}px;` +
+  `transform:translate(calc(${cx}px * (1 - var(--z, 1))), calc(${cy}px * (1 - var(--z, 1)))) scale(calc(1 + (1 - var(--z, 1)) * 2.6));`;
+const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 1))), calc(${asuncion.y}px + ${cy}px * (1 - var(--z, 1))));`;
+---
+<section class="about" id="nosotros" data-about>
+  <div class="stage">
+    <svg class="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <defs>
+        {routes.map((r, i) => <path id={`rt${i}`} d={r.d} />)}
+      </defs>
+      <g class="world" style={zoom}>
+        <path class="land" d={land} />
+        <path class="borders" d={borders} />
+        <path class="coast" d={coast} />
+        <path class="py" d={paraguay} />
+        {routes.map((r, i) => (
+          <g class="route" style={`--i:${i}`}>
+            <path class="line" d={r.d} pathLength="1" />
+            <circle class="end" cx={r.x} cy={r.y} r="2.6" />
+            <text x={r.x + (r.anchor === 'end' ? -7 : 7)} y={r.y + 4} text-anchor={r.anchor}>{r.name}</text>
+            <circle class="cargo" r="2.4">
+              <animateMotion dur={`${5 + i * 0.7}s`} begin="0s" repeatCount="indefinite">
+                <mpath href={`#rt${i}`} />
+              </animateMotion>
+            </circle>
+          </g>
+        ))}
+      </g>
+      <!-- outside the zoomed group so it keeps its size; it follows the pan instead -->
+      <g class="asu" style={pin}>
+        <circle class="pulse" r="4" />
+        <circle class="pin" r="4" />
+        <text x="-7" y="17" text-anchor="end">Asunción</text>
+      </g>
+    </svg>
+
+    <div class="wrap panel">
+      <div class="copy">
+        <h2 class="h2">¿Quiénes somos?</h2>
+        <p class="big"><Copy text={about.lead} /></p>
+        <p>{about.body}</p>
+        <dl class="facts">
+          <div><dt>Desde</dt><dd>{site.founded}</dd></div>
+          <div><dt>Trayectoria</dt><dd><Years /> años</dd></div>
+          <div><dt>Sede</dt><dd>Asunción</dd></div>
+        </dl>
+        <blockquote>“{site.tagline}”</blockquote>
+      </div>
+    </div>
+    <p class="caption wrap">Principales orígenes y destinos del comercio exterior paraguayo.</p>
+  </div>
+</section>
+
+<script>
+  import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
+  const sec = document.querySelector<HTMLElement>('[data-about]')!;
+  const map = sec.querySelector<SVGSVGElement>('.map')!;
+  const wide = matchMedia('(min-width: 901px)');
+
+  if (reduceMotion()) {
+    sec.style.setProperty('--z', '1');
+    map.pauseAnimations();
+  } else onScroll(vh => {
+    let z: number;
+    if (wide.matches) {
+      const r = sec.getBoundingClientRect();
+      z = clamp(-r.top / (r.height - vh));           // pinned: progress through the section
+    } else {
+      const r = map.getBoundingClientRect();
+      z = clamp((vh * 0.95 - r.top) / (vh * 0.75)); // small screens: as the map crosses the screen
+    }
+    sec.style.setProperty('--z', z.toFixed(4));
+  });
+</script>
+
+<style>
+  .about { position: relative; background: var(--alt); color: var(--body); }
+  .stage { position: relative; overflow: hidden; }
+
+  /* ---- map ---- */
+  .map { display: block; width: 100%; height: auto; }
+  .world { will-change: transform; }
+  .land { fill: rgba(8, 120, 186, .07); }
+  .coast { fill: none; stroke: rgba(8, 120, 186, .55); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .borders { fill: none; stroke: rgba(8, 120, 186, .2); stroke-width: .8; vector-effect: non-scaling-stroke; }
+  .py { fill: var(--sky); fill-opacity: calc(.35 + (1 - var(--z, 1)) * .45); stroke: var(--sky-d); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+
+  .route { --t: clamp(0, (var(--z, 1) - .28 - var(--i) * .055) * 2.6, 1); }
+  .route .line {
+    /* no non-scaling-stroke here: it breaks pathLength-based dashes (the draw-on effect) */
+    fill: none; stroke: var(--sky-d); stroke-width: 1.6; stroke-linecap: round;
+    stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--t));
+  }
+  .route .end { fill: var(--navy); opacity: var(--t); }
+  .route text { font: 600 15px var(--text); paint-order: stroke; stroke: var(--alt); stroke-width: 3px; fill: var(--h); opacity: clamp(0, var(--t) * 3 - 2, 1); }
+  .cargo { fill: var(--sky); stroke: #fff; stroke-width: 1; opacity: clamp(0, var(--t) * 4 - 3, 1); }
+
+  .pin { fill: var(--navy); stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .pulse { fill: var(--sky); transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
+  @keyframes pulse { from { transform: scale(1); opacity: .7; } to { transform: scale(5); opacity: 0; } }
+  .asu text { font: 700 15px var(--display); fill: var(--navy); paint-order: stroke; stroke: var(--alt); stroke-width: 3px; }
+
+  /* ---- copy ---- */
+  .panel { padding-block: var(--section) 24px; }
+  .copy { display: grid; gap: 1.1rem; max-width: 30rem; }
+  .h2 { color: var(--h); }
+  .big { font-size: 1.25rem; color: var(--h); }
+  .facts { display: flex; flex-wrap: wrap; gap: 12px 36px; padding-block: 18px; border-block: 1px solid var(--line); }
+  .facts dt { font-size: .85rem; color: var(--muted); }
+  .facts dd { font: 800 1.6rem/1.1 var(--display); font-stretch: 115%; color: var(--h); }
+  blockquote { font: 600 1.15rem/1.4 var(--display); font-stretch: 110%; color: var(--sky-d); }
+  .caption { font-size: .82rem; color: var(--muted); padding-bottom: 32px; }
+
+  /* ---- wide screens: pinned stage, copy over the map's Pacific side ---- */
+  @media (min-width: 901px) {
+    .about { height: 240vh; }
+    .stage { position: sticky; top: 0; height: 100vh; }
+    /* map lives right of the copy column; the zoomed-in start fills it, the world view fits it */
+    /* an absolutely positioned <svg> doesn't stretch between left/right, so width is explicit */
+    .stage { --mapl: max(44%, calc(var(--gutter) + 30rem + 48px)); }
+    .map { position: absolute; top: var(--header); left: var(--mapl); width: calc(100% - var(--mapl) - 16px); height: calc(100% - var(--header)); }
+    .panel { position: relative; z-index: 2; height: 100%; display: flex; align-items: center; padding-block: var(--header) 0; }
+    .caption { position: absolute; z-index: 2; right: 0; bottom: 0; width: auto; text-align: right; }
+  }
+  @media (max-width: 900px) {
+    .stage { display: flex; flex-direction: column; }
+    .panel { order: 1; }
+    .map { order: 2; margin-top: 24px; }
+    .caption { order: 3; }
+  }
+</style>

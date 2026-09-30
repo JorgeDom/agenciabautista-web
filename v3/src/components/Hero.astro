@@ -1,0 +1,164 @@
+---
+import { site, heroFrames } from '../data/site';
+const { count, lg, sm } = heroFrames;
+const pad = (n: number) => String(n).padStart(3, '0');
+---
+<section class="hero" id="inicio" data-hero data-count={count} data-lg={lg} data-sm={sm}>
+  <div class="stage">
+    <!-- scroll-scrubbed ship video: one frame per scroll position, drawn on the canvas -->
+    <picture class="poster" aria-hidden="true">
+      <source media="(max-width: 720px)" srcset={`${sm}/${pad(1)}.webp`} />
+      <img src={`${lg}/${pad(1)}.webp`} alt="" width="1280" height="720" fetchpriority="high" />
+    </picture>
+    <canvas class="film" aria-hidden="true"></canvas>
+    <div class="shade" aria-hidden="true"></div>
+
+    <div class="wrap copy">
+      <p class="kicker">Despachos aduaneros y logística en Paraguay</p>
+      <h1>
+        <span>Confianza que</span>
+        <span>cruza fronteras</span>
+        <span class="since">desde {site.founded}.</span>
+      </h1>
+      <p class="lead">Acompañamos a importadores y exportadores con agilidad, transparencia y soluciones reales, de la primera consulta hasta la mercadería liberada.</p>
+      <div class="cta">
+        <a class="btn btn--sky" href="#contacto">Solicitar asesoría</a>
+        <a class="btn btn--ghost" href="#servicios">Ver servicios</a>
+      </div>
+    </div>
+
+    <div class="wrap base" aria-hidden="true">
+      <span class="coords">25°16′S 57°38′O · Asunción</span>
+      <span class="hint">Deslizá para zarpar</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]')!;
+  const canvas = hero.querySelector<HTMLCanvasElement>('.film')!;
+  const ctx = canvas.getContext('2d')!;
+  const count = Number(hero.dataset.count);
+  const small = matchMedia('(max-width: 720px)').matches;
+  const base = small ? hero.dataset.sm! : hero.dataset.lg!;
+  const frames: (HTMLImageElement | null)[] = Array(count).fill(null);
+  let want = 0, drawn = -1;
+
+  function size() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(canvas.clientWidth * dpr);
+    canvas.height = Math.round(canvas.clientHeight * dpr);
+    drawn = -1; draw();
+  }
+
+  // nearest frame that has finished loading, so fast scrolls never show a blank
+  function nearest(i: number) {
+    for (let d = 0; d < count; d++) {
+      if (frames[i - d]) return i - d;
+      if (frames[i + d]) return i + d;
+    }
+    return -1;
+  }
+
+  function draw() {
+    const i = nearest(want);
+    if (i < 0 || i === drawn) return;
+    const img = frames[i]!;
+    const cw = canvas.width, ch = canvas.height;
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight); // object-fit: cover
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    // on narrow screens, keep the lower-middle band (where the ship sails) in view
+    ctx.drawImage(img, (cw - w) / 2, (ch - h) * 0.6, w, h);
+    drawn = i;
+    hero.classList.add('live');
+  }
+
+  function load(i: number) {
+    return new Promise<void>(res => {
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = () => { frames[i] = img; if (Math.abs(i - want) < 3) draw(); res(); };
+      img.onerror = () => res();
+      img.src = `${base}/${String(i + 1).padStart(3, '0')}.webp`;
+    });
+  }
+
+  async function preload() {
+    await load(0);
+    // coarse pass first (every 8th frame) so scrubbing works early, then fill the gaps
+    const order = [...Array(count).keys()].sort((a, b) => (a % 8 === 0 ? 0 : 1) - (b % 8 === 0 ? 0 : 1) || a - b);
+    const queue = order.filter(i => i !== 0);
+    const workers = Array.from({ length: 6 }, async () => { while (queue.length) await load(queue.shift()!); });
+    await Promise.all(workers);
+  }
+
+  if (!reduceMotion()) {
+    hero.classList.add('scrub');
+    addEventListener('resize', size);
+    size();
+    preload();
+    onScroll(vh => {
+      const r = hero.getBoundingClientRect();
+      const p = clamp(-r.top / (r.height - vh));
+      hero.style.setProperty('--p', p.toFixed(4));
+      want = Math.round(p * (count - 1));
+      draw();
+    });
+  }
+</script>
+
+<style>
+  .hero { position: relative; background: var(--navy); }
+  .stage { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; }
+
+  /* scrubbing: the section is tall and the stage stays pinned while the ship crosses */
+  .hero.scrub { height: 280vh; }
+  .scrub .stage { position: sticky; top: 0; }
+
+  .poster img, .film { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .poster img { object-fit: cover; object-position: 50% 60%; }
+  .film { opacity: 0; }
+  .live .film { opacity: 1; }
+
+  /* keep the headline legible over open water; fade the bottom into the next section */
+  .shade {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(4, 20, 41, .82) 0%, rgba(7, 30, 61, .55) 32%, rgba(7, 30, 61, 0) 58%),
+      linear-gradient(0deg, rgba(4, 20, 41, .9) 0%, rgba(4, 20, 41, 0) 22%);
+  }
+
+  .copy {
+    position: relative; z-index: 2;
+    padding-top: calc(var(--header) + clamp(28px, 6vh, 72px));
+    /* ease the copy up and out in the last stretch so the ship gets the stage */
+    transform: translateY(calc(clamp(0, (var(--p, 0) - .7) * 3.3, 1) * -40px));
+    opacity: calc(1 - clamp(0, (var(--p, 0) - .7) * 3.3, 1) * .85);
+  }
+  .kicker { color: var(--sky-l); font-weight: 600; margin-bottom: 1rem; text-shadow: 0 1px 12px rgba(4, 20, 41, .6); }
+  h1 {
+    font: 850 clamp(2.6rem, 6.4vw, 5.8rem)/.9 var(--display);
+    font-stretch: 125%; letter-spacing: -.02em; color: #fff;
+    text-shadow: 0 2px 24px rgba(4, 20, 41, .45);
+  }
+  h1 span { display: block; }
+  h1 .since { font-size: .42em; font-stretch: 100%; font-weight: 600; color: var(--sky-l); margin-top: .35em; letter-spacing: 0; }
+  .lead { max-width: 32rem; margin-top: 1.4rem; font-size: 1.12rem; color: var(--d-text); text-shadow: 0 1px 12px rgba(4, 20, 41, .7); }
+  .cta { margin-top: 1.6rem; }
+
+  .base {
+    position: absolute; z-index: 2; left: 0; right: 0; bottom: 22px; margin-inline: auto;
+    display: flex; justify-content: space-between; gap: 16px;
+    font: 400 .8rem/1 var(--stencil); letter-spacing: .12em; color: var(--d-muted);
+  }
+  .hint { opacity: calc(1 - var(--p, 0) * 6); }
+  .hero:not(.scrub) .hint { display: none; }
+
+  @media (max-width: 720px) {
+    .hero.scrub { height: 220vh; }
+    .copy { padding-top: calc(var(--header) + 24px); }
+    .lead { font-size: 1rem; }
+  }
+</style>
