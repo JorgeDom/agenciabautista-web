@@ -116,14 +116,26 @@ const pad = (n: number) => String(n).padStart(3, '0');
         draw();
       });
     } else {
-      // mobile isn't pinned, so the hero is just one screen tall — --p tracks its own
-      // natural scroll-through (still used for the exit fade below), while --pe is a
-      // much tighter window so the logo-to-text handoff reacts to the first hint of a
-      // scroll instead of needing a big chunk of the screen.
-      onScroll(vh => {
+      // Mobile: the logo holds the screen on load and hands off to the hero text at the
+      // very first hint of a scroll — a one-way switch, not scroll-scrubbed, so even a
+      // 1px nudge (or the start of a touch drag) is enough. The `intro` class gates the
+      // hidden state, so if this script never runs the text simply shows as normal.
+      hero.classList.add('intro');
+      const events = ['scroll', 'touchmove', 'wheel', 'keydown'] as const;
+      const reveal = () => {
+        hero.classList.add('revealed');
+        events.forEach(e => removeEventListener(e, reveal));
+        hero.removeEventListener('focusin', reveal);
+      };
+      if (scrollY > 0) reveal(); // reloaded mid-page: skip the intro
+      else {
+        events.forEach(e => addEventListener(e, reveal, { passive: true }));
+        hero.addEventListener('focusin', reveal); // keyboard users tabbing to the buttons
+      }
+      // --p still tracks the hero's own scroll-through for the exit fade on .copy
+      onScroll(() => {
         const r = hero.getBoundingClientRect();
         hero.style.setProperty('--p', clamp(-r.top / r.height).toFixed(4));
-        hero.style.setProperty('--pe', clamp(-r.top / 120).toFixed(4));
       });
     }
   }
@@ -191,18 +203,25 @@ const pad = (n: number) => String(n).padStart(3, '0');
     .cta    { opacity: calc(clamp(0, (var(--p, 0) - .30) * 5, 1)); transform: translateY(calc((1 - clamp(0, (var(--p, 0) - .30) * 5, 1)) * 18px)); }
   }
 
-  /* Mobile: no scroll-scrubbing. The logo-to-text handoff reacts to --pe, a ~120px
-     window, so the first hint of a scroll is enough to trigger it — not a fraction
-     of the whole screen. The exit fade lower down still uses --p (the hero's full
-     scroll-through), so the text stays put until the hero is actually leaving. */
+  /* Mobile: logo on load, text after the first hint of a scroll. A class switch
+     (.revealed, set once by the script) drives timed transitions, so the handoff is
+     instant to trigger but still reads as a sequence: logo out, then kicker, headline,
+     lede and buttons in, top to bottom. Gated on .intro, which only the script adds. */
   @media (prefers-reduced-motion: no-preference) and (max-width: 720px) {
-    .logo-intro { display: grid; opacity: calc(1 - clamp(0, var(--pe, 0) * 4, 1)); }
-    .logo-img { animation: logo-in .8s cubic-bezier(.2, .7, .2, 1) both; }
+    .intro .logo-intro { display: grid; transition: opacity .3s ease, transform .3s ease; }
+    .intro .logo-img { animation: logo-in .8s cubic-bezier(.2, .7, .2, 1) both; }
+    .intro.revealed .logo-intro { opacity: 0; transform: scale(.94); }
 
-    .kicker { opacity: calc(clamp(0, (var(--pe, 0) - .10) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .10) * 7.14, 1)) * 18px)); }
-    h1      { opacity: calc(clamp(0, (var(--pe, 0) - .18) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .18) * 7.14, 1)) * 18px)); }
-    .lead   { opacity: calc(clamp(0, (var(--pe, 0) - .26) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .26) * 7.14, 1)) * 18px)); }
-    .cta    { opacity: calc(clamp(0, (var(--pe, 0) - .34) * 7.14, 1)); transform: translateY(calc((1 - clamp(0, (var(--pe, 0) - .34) * 7.14, 1)) * 18px)); }
+    .intro :is(.kicker, h1, .lead, .cta) {
+      opacity: 0; transform: translateY(18px);
+      transition: opacity .45s ease, transform .55s cubic-bezier(.2, .7, .2, 1);
+    }
+    .intro:not(.revealed) .cta { pointer-events: none; }
+    .intro.revealed :is(.kicker, h1, .lead, .cta) { opacity: 1; transform: none; }
+    .intro.revealed .kicker { transition-delay: .12s; }
+    .intro.revealed h1      { transition-delay: .2s; }
+    .intro.revealed .lead   { transition-delay: .28s; }
+    .intro.revealed .cta    { transition-delay: .36s; }
   }
 
   @keyframes logo-in {

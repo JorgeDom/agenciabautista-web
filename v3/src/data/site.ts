@@ -72,8 +72,8 @@ export const sectors = [
  * while a value is empty the page shows a placeholder (or the drawn fallback).
  */
 export const media = {
-  crane: '/img/grua.webp',    // gantry crane, front elevation (ChatGPT; originals in v3/src-images/)
-  truck: '/img/camion.webp',  // top-down truck with container, cab to the right
+  spreader: '/img/spreader.webp', // container spreader (gripper), front elevation (original in v3/src-images/)
+  truck: '/img/camion.webp',  // top-down truck with container, cab to the right (original in v3/src-images/)
 };
 
 /**

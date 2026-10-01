@@ -40,21 +40,35 @@ const links = [
   // The header is the one piece of chrome that must never fail, so it runs its own
   // scroll listener instead of sharing scroll.ts's — a broken scene elsewhere on the
   // page can never take the nav down with it.
+  // Mobile: the hero's own logo owns the first screen, so the bar stays tucked away
+  // until the hero has scrolled past, then slides in and stays. Desktop: always shown.
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const mobile = matchMedia('(max-width: 720px)');
+
   let ticking = false;
   function update() {
     const max = document.documentElement.scrollHeight - innerHeight;
     top.style.setProperty('--page', String(max > 0 ? scrollY / max : 0));
     top.classList.toggle('solid', scrollY > 40);
+
+    const tucked = mobile.matches && !!hero && hero.getBoundingClientRect().bottom > top.offsetHeight;
+    if (tucked !== top.classList.contains('tucked')) {
+      top.classList.toggle('tucked', tucked);
+      top.inert = tucked; // nothing focusable while it's off-screen
+      if (tucked) { menu.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+    }
     ticking = false;
   }
-  addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(update); }
-  }, { passive: true });
+  const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  addEventListener('scroll', request, { passive: true });
+  addEventListener('resize', request);
   update();
 </script>
 
 <style>
-  .top { position: fixed; inset: 0 0 auto; z-index: 50; color: #fff; transition: background-color .3s; }
+  .top { position: fixed; inset: 0 0 auto; z-index: 50; color: #fff; transition: background-color .3s, transform .35s cubic-bezier(.2, .7, .2, 1); }
+  .top.tucked { transform: translateY(-100%); }
+  @media (prefers-reduced-motion: reduce) { .top { transition: none; } }
   .top.solid { background: rgba(4, 20, 41, .92); backdrop-filter: blur(10px); }
   .bar { display: flex; align-items: center; justify-content: space-between; height: var(--header); }
   .brand img { height: 50px; width: auto; }

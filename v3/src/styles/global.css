@@ -46,6 +46,12 @@ a { color: inherit; }
 ul, ol { list-style: none; margin: 0; padding: 0; }
 h1, h2, h3, p, figure, blockquote, dl, dd { margin: 0; }
 
+/* Scenes slide things in from off-screen (service containers, doors, map). On phones,
+   anything poking past the right edge widens the layout viewport, and the fixed header
+   stretches with it — the Menú button ends up off-screen until the motion settles.
+   clip (not hidden) contains that without creating a scroll box, so sticky still works. */
+main > section { overflow-x: clip; }
+
 .wrap { width: 100%; max-width: calc(var(--max) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
 .skip { position: absolute; left: -999px; top: 8px; z-index: 100; background: var(--sky); color: var(--navy); padding: 8px 14px; border-radius: 6px; }
 .skip:focus { left: 16px; }
