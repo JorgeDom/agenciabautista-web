@@ -63,6 +63,27 @@ const links = [
   addEventListener('scroll', request, { passive: true });
   addEventListener('resize', request);
   update();
+
+  // Jumping to a pinned, scroll-scrubbed section (the map, the crane) would otherwise
+  // land you at its very start, mid-animation — you'd have to keep scrolling to see
+  // it finish. Detect that at click time and land just past its resolved end instead,
+  // so the section is already complete. Ordinary sections jump as normal.
+  document.addEventListener('click', e => {
+    const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+    if (!a) return;
+    const dest = document.getElementById(a.getAttribute('href')!.slice(1));
+    if (!dest) return;
+    const rect = dest.getBoundingClientRect();
+    const pinDistance = rect.height - innerHeight;
+    // only sections with an actual sticky-pinned stage behave this way (the map, the
+    // crane, desktop only) — a plain section being tall is not the same thing
+    const isPinned = pinDistance > 0 && [...dest.querySelectorAll<HTMLElement>('*')]
+      .some(el => getComputedStyle(el).position === 'sticky');
+    if (!isPinned) return;
+    e.preventDefault();
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scrollTo({ top: scrollY + rect.top + pinDistance - 4, behavior: reduce ? 'auto' : 'smooth' });
+  });
 </script>
 
 <style>

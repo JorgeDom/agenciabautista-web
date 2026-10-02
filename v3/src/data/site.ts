@@ -59,12 +59,12 @@ export const steps = [
 
 // ncm = HS/NCM tariff chapters typical of the sector (to confirm with the client).
 export const sectors = [
-  { name: 'Manufactura', img: '/img/sectores/manufactura.webp', goods: 'Maquinaria, insumos industriales y plásticos', ncm: ['39', '84'] },
-  { name: 'Tecnología', img: '/img/sectores/tecnologia.webp', goods: 'Equipos informáticos y electrónica', ncm: ['84', '85'] },
-  { name: 'Salud', img: '/img/sectores/salud.webp', goods: 'Medicamentos e insumos médicos', ncm: ['30', '90'] },
-  { name: 'Agro', img: '/img/sectores/agro.webp', goods: 'Granos, semillas y fertilizantes', ncm: ['10', '12', '31'] },
-  { name: 'Repuestos', img: '/img/sectores/repuestos.webp', goods: 'Autopartes y repuestos', ncm: ['87'] },
-  { name: 'Consumo masivo', img: '/img/sectores/consumo.webp', goods: 'Alimentos, bebidas y cosmética', ncm: ['21', '22', '33'] },
+  { name: 'Manufactura', img: '/img/sectores/manufactura.png', goods: 'Maquinaria, insumos industriales y plásticos', ncm: ['39', '84'] },
+  { name: 'Tecnología', img: '/img/sectores/tecnologia.png', goods: 'Equipos informáticos y electrónica', ncm: ['84', '85'] },
+  { name: 'Salud', img: '/img/sectores/salud.png', goods: 'Medicamentos e insumos médicos', ncm: ['30', '90'] },
+  { name: 'Agro', img: '/img/sectores/agro.png', goods: 'Granos, semillas y fertilizantes', ncm: ['10', '12', '31'] },
+  { name: 'Repuestos', img: '/img/sectores/repuestos.png', goods: 'Autopartes y repuestos', ncm: ['87'] },
+  { name: 'Consumo masivo', img: '/img/sectores/consumo.png', goods: 'Alimentos, bebidas y cosmética', ncm: ['21', '22', '33'] },
 ];
 
 /**

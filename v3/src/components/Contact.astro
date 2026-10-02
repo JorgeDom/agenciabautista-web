@@ -67,7 +67,7 @@ import Years from './Years.astro';
 
   .foot { background: #020c19; color: var(--d-muted); padding-block: 36px; font-size: .9rem; }
   .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
-  .foot img { height: 36px; width: auto; }
+  .foot img { height: 50px; width: auto; }
 
   .wa {
     position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 58px; height: 58px; border-radius: 50%;
@@ -77,4 +77,5 @@ import Years from './Years.astro';
   .wa svg { width: 30px; height: 30px; }
 
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .foot img { height: 40px; } }
 </style>
