@@ -1,44 +1,64 @@
 ---
-import { site, about } from '../data/site';
+import { about } from '../data/site';
 import Copy from './Copy.astro';
-import Years from './Years.astro';
-import { W, H, land, coast, borders, paraguay, asuncion, routes } from '../data/worldmap';
+import { W, H, land, coast, borders, paraguay, river, asuncion, names, ports } from '../data/paraguaymap';
 
-// Zoom: starts close on Asunción (centred), ends on the whole world. Driven by --z (0 → 1).
-const cx = W / 2 - asuncion.x, cy = H / 2 - asuncion.y;
-const zoom = `transform-origin:${asuncion.x}px ${asuncion.y}px;` +
-  `transform:translate(calc(${cx}px * (1 - var(--z, 1))), calc(${cy}px * (1 - var(--z, 1)))) scale(calc(1 + (1 - var(--z, 1)) * 2.6));`;
-const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 1))), calc(${asuncion.y}px + ${cy}px * (1 - var(--z, 1))));`;
+// Zoom: starts close on Asunción (centred), ends on the whole country. Driven by --z (0 → 1).
+const K = 1.1; // extra scale at the start
+const [ax, ay] = asuncion;
+const cx = W / 2 - ax, cy = H / 2 - ay;
+const near = '(1 - var(--z, 1))';
+const zoom = `transform-origin:${ax}px ${ay}px;` +
+  `transform:translate(calc(${cx}px * ${near}), calc(${cy}px * ${near})) scale(calc(1 + ${near} * ${K}));`;
+// Dots and names sit outside the zoomed group so they keep their size; this makes them follow it instead.
+const follow = ([x, y]: number[]) =>
+  `transform:translate(calc(${ax}px + ${(x - ax).toFixed(1)}px * (1 + ${near} * ${K}) + ${cx}px * ${near}), ` +
+  `calc(${ay}px + ${(y - ay).toFixed(1)}px * (1 + ${near} * ${K}) + ${cy}px * ${near})) scale(var(--mark, 1));`;
+
+const side = {
+  right: { dx: '.7em', dy: '.35em', 'text-anchor': 'start' },
+  left: { dx: '-.7em', dy: '.35em', 'text-anchor': 'end' },
+  above: { dy: '-.8em', 'text-anchor': 'middle' },
+  below: { dy: '1.5em', 'text-anchor': 'middle' },
+};
+const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
+  (ports.length ? ` y los puertos que cubrimos: ${ports.map(p => p.name).join(', ')}.` : '.');
 ---
 <section class="about" id="nosotros" data-about>
   <div class="stage">
-    <svg class="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <svg class="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={alt}>
+      <!-- Paraguay is landlocked, so the map has no shore to end on: the neighbours fade out around it -->
       <defs>
-        {routes.map((r, i) => <path id={`rt${i}`} d={r.d} />)}
+        <radialGradient id="fade" gradientUnits="userSpaceOnUse" cx={W / 2} cy={H / 2} r={W / 2}>
+          <stop offset=".82" stop-color="#fff" />
+          <stop offset="1" stop-color="#fff" stop-opacity="0" />
+        </radialGradient>
+        <mask id="vignette" maskUnits="userSpaceOnUse" x="0" y="0" width={W} height={H}>
+          <rect width={W} height={H} fill="url(#fade)" />
+        </mask>
       </defs>
-      <g class="world" style={zoom}>
-        <path class="land" d={land} />
-        <path class="borders" d={borders} />
-        <path class="coast" d={coast} />
-        <path class="py" d={paraguay} />
-        {routes.map((r, i) => (
-          <g class="route" style={`--i:${i}`}>
-            <path class="line" d={r.d} pathLength="1" />
-            <circle class="end" cx={r.x} cy={r.y} r="2.6" />
-            <text x={r.x + (r.anchor === 'end' ? -7 : 7)} y={r.y + 4} text-anchor={r.anchor}>{r.name}</text>
-            <circle class="cargo" r="2.4">
-              <animateMotion dur={`${5 + i * 0.7}s`} begin="0s" repeatCount="indefinite">
-                <mpath href={`#rt${i}`} />
-              </animateMotion>
-            </circle>
-          </g>
-        ))}
+      <g mask="url(#vignette)">
+        <g class="world" style={zoom}>
+          <path class="land" d={land} />
+          <path class="borders" d={borders} />
+          <path class="coast" d={coast} />
+          <path class="py" d={paraguay} />
+          <path class="river" d={river} />
+        </g>
       </g>
-      <!-- outside the zoomed group so it keeps its size; it follows the pan instead -->
-      <g class="asu" style={pin}>
+      {names.map(n => (
+        <g style={follow(n.at)}><text class:list={['country', { home: n.home }]} text-anchor="middle">{n.name}</text></g>
+      ))}
+      {ports.map((p, i) => (
+        <g class="port" style={`--f:${(i / ports.length).toFixed(3)};${follow([p.x, p.y])}`}>
+          <circle r="3.6" />
+          {p.label !== 'none' && <text {...side[p.label ?? 'right']}>{p.name}</text>}
+        </g>
+      ))}
+      <g class="asu" style={follow(asuncion)}>
         <circle class="pulse" r="4" />
-        <circle class="pin" r="4" />
-        <text x="-7" y="17" text-anchor="end">Asunción</text>
+        <circle class="pin" r="4.5" />
+        <text {...side.left}>Asunción</text>
       </g>
     </svg>
 
@@ -47,15 +67,9 @@ const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 
         <h2 class="h2">¿Quiénes somos?</h2>
         <p class="big"><Copy text={about.lead} /></p>
         <p>{about.body}</p>
-        <dl class="facts">
-          <div><dt>Desde</dt><dd>{site.founded}</dd></div>
-          <div><dt>Trayectoria</dt><dd><Years /> años</dd></div>
-          <div><dt>Sede</dt><dd>Asunción</dd></div>
-        </dl>
-        <blockquote>“{site.tagline}”</blockquote>
       </div>
     </div>
-    <p class="caption wrap">Principales orígenes y destinos del comercio exterior paraguayo.</p>
+    <p class="caption wrap">{about.caption}</p>
   </div>
 </section>
 
@@ -65,10 +79,8 @@ const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 
   const map = sec.querySelector<SVGSVGElement>('.map')!;
   const wide = matchMedia('(min-width: 901px)');
 
-  if (reduceMotion()) {
-    sec.style.setProperty('--z', '1');
-    map.pauseAnimations();
-  } else onScroll(vh => {
+  if (reduceMotion()) sec.style.setProperty('--z', '1');
+  else onScroll(vh => {
     let z: number;
     if (wide.matches) {
       const r = sec.getBoundingClientRect();
@@ -90,52 +102,54 @@ const pin = `transform:translate(calc(${asuncion.x}px + ${cx}px * (1 - var(--z, 
   /* ---- map ---- */
   .map { display: block; width: 100%; height: auto; }
   .world { will-change: transform; }
-  .land { fill: rgba(8, 120, 186, .07); }
+  .land { fill: rgba(8, 120, 186, .06); }
   .coast { fill: none; stroke: rgba(8, 120, 186, .55); stroke-width: 1; vector-effect: non-scaling-stroke; }
-  .borders { fill: none; stroke: rgba(8, 120, 186, .2); stroke-width: .8; vector-effect: non-scaling-stroke; }
-  .py { fill: var(--sky); fill-opacity: calc(.35 + (1 - var(--z, 1)) * .45); stroke: var(--sky-d); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+  .borders { fill: none; stroke: rgba(8, 120, 186, .32); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .py { fill: var(--sky); fill-opacity: .24; stroke: var(--sky-d); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .river { fill: none; stroke: var(--sky-d); stroke-opacity: .6; stroke-width: 1.2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 
-  .route { --t: clamp(0, (var(--z, 1) - .28 - var(--i) * .055) * 2.6, 1); }
-  .route .line {
-    /* no non-scaling-stroke here: it breaks pathLength-based dashes (the draw-on effect) */
-    fill: none; stroke: var(--sky-d); stroke-width: 1.6; stroke-linecap: round;
-    stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - var(--t));
+  text { paint-order: stroke; stroke: var(--alt); stroke-width: 3px; stroke-linejoin: round; }
+  .country {
+    font: 600 11px var(--text); letter-spacing: .22em; text-transform: uppercase; fill: var(--muted); stroke: none;
+    opacity: clamp(0, var(--z, 1) * 3 - 1.5, 1); /* out of frame until the zoom-out is half done */
   }
-  .route .end { fill: var(--navy); opacity: var(--t); }
-  .route text { font: 600 15px var(--text); paint-order: stroke; stroke: var(--alt); stroke-width: 3px; fill: var(--h); opacity: clamp(0, var(--t) * 3 - 2, 1); }
-  .cargo { fill: var(--sky); stroke: #fff; stroke-width: 1; opacity: clamp(0, var(--t) * 4 - 3, 1); }
+  .country.home { font: 800 15px var(--display); font-stretch: 115%; fill: var(--sky-d); }
 
-  .pin { fill: var(--navy); stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  /* each port fades in once the zoom-out has gone far enough to reach it (--f: 0 nearest … 1 farthest) */
+  .port { opacity: clamp(0, (var(--z, 1) - .2 - var(--f) * .55) * 6, 1); }
+  .port circle { fill: var(--navy); stroke: #fff; stroke-width: 1.2; }
+  .port text { font: 600 13px var(--text); fill: var(--h); }
+
+  .pin { fill: var(--sky); stroke: var(--navy); stroke-width: 2; }
   .pulse { fill: var(--sky); transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
   @keyframes pulse { from { transform: scale(1); opacity: .7; } to { transform: scale(5); opacity: 0; } }
-  .asu text { font: 700 15px var(--display); fill: var(--navy); paint-order: stroke; stroke: var(--alt); stroke-width: 3px; }
+  .asu text { font: 700 15px var(--display); fill: var(--navy); }
 
   /* ---- copy ---- */
   .panel { padding-block: var(--section) 24px; }
   .copy { display: grid; gap: 1.1rem; max-width: 30rem; }
   .h2 { color: var(--h); }
   .big { font-size: 1.25rem; color: var(--h); }
-  .facts { display: flex; flex-wrap: wrap; gap: 12px 36px; padding-block: 18px; border-block: 1px solid var(--line); }
-  .facts dt { font-size: .85rem; color: var(--muted); }
-  .facts dd { font: 800 1.6rem/1.1 var(--display); font-stretch: 115%; color: var(--h); }
-  blockquote { font: 600 1.15rem/1.4 var(--display); font-stretch: 110%; color: var(--sky-d); }
   .caption { font-size: .82rem; color: var(--muted); padding-bottom: 32px; }
 
-  /* ---- wide screens: pinned stage, copy over the map's Pacific side ---- */
+  /* ---- wide screens: pinned stage, copy beside the map ---- */
   @media (min-width: 901px) {
-    .about { height: 240vh; }
+    .about { height: 200vh; }
     .stage { position: sticky; top: 0; height: 100vh; }
-    /* map lives right of the copy column; the zoomed-in start fills it, the world view fits it */
+    /* map lives right of the copy column; the zoomed-in start fills it, the whole country fits it */
     /* an absolutely positioned <svg> doesn't stretch between left/right, so width is explicit */
     .stage { --mapl: max(44%, calc(var(--gutter) + 30rem + 48px)); }
     .map { position: absolute; top: var(--header); left: var(--mapl); width: calc(100% - var(--mapl) - 16px); height: calc(100% - var(--header)); }
     .panel { position: relative; z-index: 2; height: 100%; display: flex; align-items: center; padding-block: var(--header) 0; }
-    .caption { position: absolute; z-index: 2; right: 0; bottom: 0; width: auto; text-align: right; }
+    /* under the map, stopping short of the floating WhatsApp button */
+    .caption { position: absolute; z-index: 2; left: var(--mapl); right: 96px; bottom: 0; width: auto; padding-inline: 0; }
   }
   @media (max-width: 900px) {
     .stage { display: flex; flex-direction: column; }
     .panel { order: 1; }
-    .map { order: 2; margin-top: 24px; }
+    /* wider than the screen so the country fills it; the map is still drawn at about half size,
+       so dots and names are scaled back up */
+    .map { order: 2; width: 120%; margin: 24px -10% 0; --mark: 1.5; }
     .caption { order: 3; }
   }
 </style>

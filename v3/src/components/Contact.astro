@@ -1,6 +1,15 @@
 ---
 import { site } from '../data/site';
 import Years from './Years.astro';
+
+// WhatsApp is the brand glyph; mail and Instagram are Lucide outlines, like the icons in "¿Por qué elegirnos?".
+// width/height are on the <svg> itself so an icon never collapses to nothing inside its (flex) button.
+const line = (d: string) => `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const icons = {
+  whatsapp: '<svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3z" /></svg>',
+  mail: line('<rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />'),
+  instagram: line('<rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />'),
+};
 ---
 <section class="contact" id="contacto">
   <div class="wrap grid">
@@ -8,8 +17,9 @@ import Years from './Years.astro';
       <h2 class="h2">Hablemos de tu próxima operación</h2>
       <p class="lede">Contanos qué necesitás importar o exportar y te respondemos con los pasos, los documentos y los plazos.</p>
       <div class="cta">
-        <a class="btn btn--wa" href={site.whatsapp} target="_blank" rel="noopener">Escribir por WhatsApp</a>
-        <a class="btn btn--ghost" href={`mailto:${site.email}`}>Enviar un email</a>
+        <a class="btn btn--wa" href={site.whatsapp} target="_blank" rel="noopener" aria-label="Escribir por WhatsApp" title="Escribir por WhatsApp" set:html={icons.whatsapp} />
+        <a class="btn btn--ghost" href={`mailto:${site.emails[0]}`} aria-label="Enviar un email" title="Enviar un email" set:html={icons.mail} />
+        <a class="btn btn--ghost" href={site.instagram} target="_blank" rel="noopener" aria-label="Seguinos en Instagram" title="Seguinos en Instagram" set:html={icons.instagram} />
       </div>
     </div>
     <div class="details">
@@ -18,7 +28,10 @@ import Years from './Years.astro';
           <dt>Teléfonos / WhatsApp</dt>
           <dd>{site.phones.map((p, i) => <>{i > 0 && <br />}<a href={`tel:${p.tel}`}>{p.label}</a></>)}</dd>
         </div>
-        <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+        <div>
+          <dt>Email</dt>
+          <dd>{site.emails.map((e, i) => <>{i > 0 && <br />}<a href={`mailto:${e}`}>{e}</a></>)}</dd>
+        </div>
         <div>
           <dt>Dirección</dt>
           <dd>{site.address[0]}<br />{site.address[1]}</dd>
@@ -43,9 +56,7 @@ import Years from './Years.astro';
   </div>
 </footer>
 
-<a class="wa" href={site.whatsapp} target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3a.5.5 0 0 0 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3z" /></svg>
-</a>
+<a class="wa" href={site.whatsapp} target="_blank" rel="noopener" aria-label="Escribir por WhatsApp" set:html={icons.whatsapp} />
 
 <style>
   .contact { background: var(--deep); padding-block: var(--section); }
@@ -53,6 +64,9 @@ import Years from './Years.astro';
   .grid > * { min-width: 0; }
   .h2 { font-size: clamp(2.3rem, 5vw, 4rem); }
   .lede { margin-block: 1.2rem 2rem; font-size: 1.1rem; }
+  /* icon-only buttons: round, same colours as the text buttons elsewhere */
+  .cta { gap: 14px; }
+  .cta .btn { width: 58px; height: 58px; padding: 0; }
   .map {
     margin-top: 24px; aspect-ratio: 16 / 10;
     border-radius: 6px; overflow: hidden; border: 1px solid var(--d-line); background: var(--card);
@@ -74,7 +88,6 @@ import Years from './Years.astro';
     display: grid; place-items: center; background: var(--wa); color: var(--deep);
     box-shadow: 0 8px 24px rgba(4, 20, 41, .35);
   }
-  .wa svg { width: 30px; height: 30px; }
 
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
   @media (max-width: 720px) { .foot img { height: 40px; } }

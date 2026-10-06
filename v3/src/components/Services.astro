@@ -45,7 +45,14 @@ const place = (i: number) => `--row:${i < 3 ? 2 : 1};--col:${(i % 3) + 1}`;
   let drop: number[] = []; // px each container starts above its slot (fully out of the pinned stage)
 
   function measure() {
-    sec.classList.toggle('staged', wide.matches && !reduceMotion());
+    const staged = wide.matches && !reduceMotion();
+    sec.classList.toggle('staged', staged);
+    // leaving the staged scene (window narrowed, tablet rotated): clear what the crane left on
+    // the containers, or the ones it hadn't lowered yet would stay hidden
+    if (!staged) boxes.forEach((b, i) => {
+      b.style.visibility = b.style.transform = '';
+      rigs[i].style.visibility = rigs[i].style.transform = '';
+    });
     // staged: .slot is positioned and .pin is sticky, so offsetTop is relative to the stage
     drop = slots.map(s => s.offsetTop + s.offsetHeight + 80);
   }
