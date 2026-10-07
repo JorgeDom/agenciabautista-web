@@ -4,7 +4,7 @@ import Copy from './Copy.astro';
 import { W, H, land, coast, borders, paraguay, river, asuncion, names, ports } from '../data/paraguaymap';
 
 // Zoom: starts close on Asunción (centred), ends on the whole country. Driven by --z (0 → 1).
-const K = 1.1; // extra scale at the start
+const K = 7; // extra scale at the start (8×): Gran Asunción, where the ports around the office read as separate dots
 const [ax, ay] = asuncion;
 const cx = W / 2 - ax, cy = H / 2 - ay;
 const near = '(1 - var(--z, 1))';
@@ -50,8 +50,9 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
         <g style={follow(n.at)}><text class:list={['country', { home: n.home }]} text-anchor="middle">{n.name}</text></g>
       ))}
       {ports.map((p, i) => (
-        <g class="port" style={`--f:${(i / ports.length).toFixed(3)};${follow([p.x, p.y])}`}>
-          <circle r="3.6" />
+        <g class:list={['port', { near: p.near }]} style={`--f:${(i / ports.length).toFixed(3)};${follow([p.x, p.y])}`}>
+          <title>{p.name}</title>
+          <circle r={p.near ? 2.8 : 3.6} />
           {p.label !== 'none' && <text {...side[p.label ?? 'right']}>{p.name}</text>}
         </g>
       ))}
@@ -67,6 +68,11 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
         <h2 class="h2">¿Quiénes somos?</h2>
         <p class="big"><Copy text={about.lead} /></p>
         <p>{about.body}</p>
+        <div class="ports">
+          <p class="ports-label"><span class="dot" aria-hidden="true"></span>{about.ports.label}</p>
+          <ul>{about.ports.names.map(n => <li>{n}</li>)}</ul>
+          <p class="more">{about.ports.more}</p>
+        </div>
       </div>
     </div>
     <p class="caption wrap">{about.caption}</p>
@@ -87,9 +93,9 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
       z = clamp(-r.top / (r.height - vh));           // pinned: progress through the section
     } else {
       const r = map.getBoundingClientRect();
-      // small screens: zoom out fully while the map is still comfortably on screen,
-      // well before it (and the section) scrolls away
-      z = clamp((vh * 0.85 - r.top) / (vh * 0.5));
+      // small screens: hold the Gran Asunción close-up until it is on screen (map top at 55% of the
+      // screen), then zoom out fully by the time the whole map is in view (map top at 10%)
+      z = clamp((vh * 0.55 - r.top) / (vh * 0.45));
     }
     sec.style.setProperty('--z', z.toFixed(4));
   });
@@ -117,8 +123,14 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
 
   /* each port fades in once the zoom-out has gone far enough to reach it (--f: 0 nearest … 1 farthest) */
   .port { opacity: clamp(0, (var(--z, 1) - .2 - var(--f) * .55) * 6, 1); }
+  /* the ports around Asunción are on screen from the start, while the map is zoomed in on them;
+     their names fade out early in the zoom-out, when the dots close in on the office */
+  .port.near { opacity: 1; }
+  .port.near text { opacity: clamp(0, (.32 - var(--z, 1)) * 7, 1); }
   .port circle { fill: var(--navy); stroke: #fff; stroke-width: 1.2; }
   .port text { font: 600 13px var(--text); fill: var(--h); }
+  /* the unnamed ports around Asunción: smaller and brighter, read as a cluster around the office */
+  .port.near circle { fill: var(--sky-d); stroke-width: 1; }
 
   .pin { fill: var(--sky); stroke: var(--navy); stroke-width: 2; }
   .pulse { fill: var(--sky); transform-box: fill-box; transform-origin: center; animation: pulse 2.2s ease-out infinite; }
@@ -130,6 +142,19 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
   .copy { display: grid; gap: 1.1rem; max-width: 30rem; }
   .h2 { color: var(--h); }
   .big { font-size: 1.25rem; color: var(--h); }
+
+  /* the main ports by name; the dot matches the unnamed dots around Asunción on the map */
+  .ports { padding-top: 1.1rem; border-top: 1px solid var(--line); }
+  .ports-label {
+    display: flex; align-items: center; gap: .5rem;
+    font: 700 .78rem/1 var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--sky-d);
+  }
+  .dot { width: .55rem; height: .55rem; border-radius: 50%; background: var(--sky-d); box-shadow: 0 0 0 2px #fff; }
+  .ports ul { margin-top: .6rem; color: var(--h); font-weight: 600; line-height: 1.6; }
+  .ports li { display: inline; white-space: nowrap; }
+  /* the separator stays with the name before it, so no line starts with "·" */
+  .ports li:not(:last-child)::after { content: " · "; color: var(--sky-d); white-space: normal; }
+  .more { margin-top: .3rem; font-size: .95rem; color: var(--muted); }
   .caption { font-size: .82rem; color: var(--muted); padding-bottom: 32px; }
 
   /* ---- wide screens: pinned stage, copy beside the map ---- */

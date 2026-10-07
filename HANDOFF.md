@@ -11,14 +11,13 @@ Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge'
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `7a2a634` (2026-10-06).
-- **Not committed, not deployed** (working tree on `main`, built and checked locally; Jorge wants
-  it published once he has reviewed it):
-  1. Session 2: "E.A.S." removed except in the footer; big-screen scaling; the team section.
-  2. Session 3: the client's answers applied, the founding year corrected to 1977, the Rubros
-     section (formerly Clientes) redesigned, and the team section hidden everywhere.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `046b5d4` (2026-10-07), which
+  shipped sessions 2 and 3. The team section is built but hidden.
+- **Not committed, not deployed:** session 4 (client feedback of 2026-10-07 afternoon: Rubros
+  wording and simpler cards, Process subtitle, the ports on the map). Built and checked locally.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
-  - Which port to show for "Chaco", and whether there are other main ports beyond the four he named.
+  - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
+  - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
   - The group photo (no date; they want a good photo of everyone first).
   - The confirmed number of years in business ("50" stays fixed until then; with 1977 as the
     founding year the computed figure would be 49).
@@ -38,7 +37,8 @@ Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge'
 The old variants still contain old copy (including "E.A.S." and the wrong founding year, 1976).
 Leave them alone unless Jorge asks.
 
-**Deploy.** Pushing to `main` publishes: the push of `7a2a634` was live about 40 seconds later.
+**Deploy.** Pushing to `main` publishes: the pushes of `7a2a634` and `046b5d4` were live about
+40 and 50 seconds later.
 The Cloudflare Pages settings are not visible from the repo; `astro.config.mjs` expects a
 `SITE_URL` environment variable there until the real domain (`agenciabautista.com.py`) is connected.
 
@@ -91,7 +91,8 @@ hidden], Rubros (`Sectors.astro`, anchor `#sectores`), Contacto + footer.
   fronteras" and "1977" (both in the hero headline), and "50 años" (Quiénes somos paragraph).
   Do not reintroduce them elsewhere. `og-image.jpg` (link previews) also carries the tagline and
   the year baked in: rebuild it whenever either changes (recipe in section 6).
-- **The section about sectors is "Rubros", not "Clientes"**: no client is named anywhere.
+- **The section about sectors is not about clients**: no client is named anywhere. Heading
+  "Experiencia en distintos sectores" (client's wording); the nav link still says "Rubros".
 - **"E.A.S." appears only in the footer** (`site.legal`). Everywhere else use `site.name`.
 - **The map shows coverage, not routes.** No arcs, no foreign ports. Ports come from the `ports`
   array in `site.ts`; a format example is in the comment above it.
@@ -101,8 +102,10 @@ hidden], Rubros (`Sectors.astro`, anchor `#sectores`), Contacto + footer.
 - **The team section is hidden everywhere** (`showTeam = team.published` in `site.ts`). Set
   `published: true` to show it, nav link included. To preview it locally, flip that flag and
   don't commit the flip.
-- **WhatsApp links are built in `site.ts`**: `whatsappWith(text)` for the main buttons, and
-  `sectorWhatsapp(name)` for the Rubros cards (the approved greeting plus "para el rubro …").
+- **WhatsApp links are built in `site.ts`** with `whatsappWith(text)`.
+- **Map ports:** `near: true` ports (Gran Asunción) are visible from the opening close-up and named
+  only while zoomed in; riverside ones are snapped onto the drawn river at build time (mark inland
+  ones `inland: true`). Regional ports appear, named, as the map zooms out.
 - Commit messages follow the existing style (`feat:` / `fix:` summary, then a bulleted body).
   Jorge had the `Co-Authored-By` line removed from `7a2a634`; leave it out unless he says
   otherwise. Show him the message first, and commit and push only when he asks.
@@ -111,7 +114,7 @@ hidden], Rubros (`Sectors.astro`, anchor `#sectores`), Contacto + footer.
 
 | Item | Status | Where |
 |---|---|---|
-| Ports on the map | Three added (2026-10-07); Chaco pending | Encarnación, Ciudad del Este, Puerto Falcón are on the map; Asunción's ports are represented by the office pin. Add the Chaco point when the client names it. `ports` in `site.ts`. |
+| Ports on the map | Done except three (session 4) | Gran Asunción: Itá Enramada, Caacupemí, Puerto Fénix, Terport San Antonio, Puerto Seguro Fluvial (Villeta), Aeropuerto Silvio Pettirossi. Regional: Puerto Falcón, Ciudad del Este, Encarnación. Positions are approximate (riverside ones snapped onto the river). Missing until located: PAKSA, Puerto San José (Empedril), Puerto Seguro Terrestre. `ports` in `site.ts`. |
 | Team section | Hidden; design approved by Jorge | The client wants the group photo **without names** for now, so names were removed from the code. When the photo arrives, the panel needs reworking into photo-only (it was designed with the list on the right). `team` in `site.ts`, `Team.astro`. |
 | Group photo | No date | Landscape, good resolution. The site goes ahead without it. Path goes in `team.photo`. |
 | Team names and titles | On hold | Not published for now. The founder's title ("Fundador y director · Despachante de Aduanas") was approved as is, for when names appear. |
@@ -121,9 +124,8 @@ hidden], Rubros (`Sectors.astro`, anchor `#sectores`), Contacto + footer.
 | WhatsApp number | Temporary, confirmed by the client | The manager's own line until the agency has a corporate number: `WHATSAPP` in `site.ts`. |
 | "50 años" | Fixed at 50 by client request | He will confirm the figure. Note the page now says "desde 1977", which makes 49 in 2026; the two will look inconsistent to a careful reader until he confirms. `YEARS_IN_BUSINESS` in `site.ts`. |
 | New phone (0995) 683-696 | Added; WhatsApp unknown | It sits under "Teléfonos / WhatsApp". Ask the client whether it takes WhatsApp. |
-| NCM chapters on the Rubros cards | Shown, not confirmed by the client | Typical HS/NCM chapters for each sector's goods (`ncm` in `sectors`). Ask the client to confirm. |
-| Per-rubro WhatsApp message | New, not shown to the client | The approved greeting plus "para el rubro …". Mention it to the client. |
-| River on the map | Hand-traced, approximate | `RIVER` in `paraguaymap.ts`. |
+| River on the map | Hand-traced, approximate | `RIVER` in `paraguaymap.ts`. It shows as straight segments north of Asunción in the opening close-up. |
+| Page weight of the map | +33 KB HTML (about +10 KB compressed) | The 1:10m borders needed for the 8× opening zoom (session 4). |
 
 > **No team names in the repo.** The repo is public and the client does not want names published
 > yet, so the names were removed from `site.ts` on 2026-10-07. Keep them out of anything committed
@@ -253,7 +255,36 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-07, session 3: NOT committed
+### 2026-10-07, session 4 (afternoon): NOT committed
+
+Asked for (client feedback after `046b5d4`): heading "Experiencia en distintos sectores" instead of
+"Rubros que atendemos"; remove the NCM chapters and the "Consultar" button from the cards; Process
+subtitle "Cinco etapas para una operación clara y ordenada."; show the ports on the map, naming the
+biggest and then "y muchos más". The client sent his list of main ports around Asunción (Itá
+Enramada, PAKSA, Caacupemí, Terport San Antonio, Puerto Fénix, Puerto San José, Puerto Seguro
+Terrestre and Fluvial, the Silvio Pettirossi airport), plus Alto Paraná, Itapúa (Ciudad del Este,
+Encarnación) and the Chaco.
+
+- **Rubros.** New heading; the cards lose their bottom bar (NCM chapters, per-sector WhatsApp
+  button); the product now fills the lower part of the card. `ncm` and `sectorWhatsapp` removed
+  from `site.ts`. The section head gives the lede a fixed readable width so the longer heading
+  wraps instead of squeezing it.
+- **Process.** New subtitle (with the accent on "operación").
+- **Map.** Opens at 8× on Gran Asunción, where six ports show as named dots on the river and at the
+  airport, then zooms out to the country: those names fade, the dots stay as a cluster around the
+  office, and Puerto Falcón, Ciudad del Este and Encarnación appear with their names. Each dot has
+  a hover tooltip. Borders and Paraguay's outline now use the 1:10m data so the close-up isn't
+  jagged. On phones the close-up is held until the Asunción area is on screen.
+- **Quiénes somos.** Under the copy, a "Puertos principales" list (Terport, Puerto Fénix,
+  Caacupemí, Itá Enramada, Puerto Seguro, Aeropuerto Silvio Pettirossi) and "Y muchos más en Alto
+  Paraná, Itapúa y el Chaco." (`about.ports` in `site.ts`).
+- **Not drawn:** PAKSA, Puerto San José and Puerto Seguro Terrestre, whose locations I could not
+  confirm.
+- **Checked:** production build; screenshots of the map across the zoom (desktop and phone), the
+  Rubros cards and heading, and the port list. Not checked: Safari, Firefox, real phones.
+- Files: `site.ts`, `paraguaymap.ts`, `About.astro`, `Sectors.astro`, `Process.astro`, this file.
+
+### 2026-10-07, session 3: shipped as `046b5d4`
 
 Asked for: record the client's answers and apply them; hide the team section; redesign the
 Clientes cards (the client found them "medio triste"), with Jorge's two reference cards as the
@@ -282,7 +313,7 @@ then publish.
   at 390, 1440 and 2560 wide. Not checked: Safari, Firefox, real phones.
 - Files: `site.ts`, `Header.astro`, `Sectors.astro`, `public/og-image.jpg`, this file.
 
-### 2026-10-06, session 2 (afternoon): NOT committed
+### 2026-10-06, session 2 (afternoon): shipped as `046b5d4` (2026-10-07)
 
 Asked for: remove "E.A.S." except in the footer; a team section proposal modelled on the Barreto
 y Asociados site; a better layout on 4K screens.

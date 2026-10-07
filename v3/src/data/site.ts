@@ -41,22 +41,41 @@ export const about = {
   lead: `${site.name} es una empresa especializada en despachos aduaneros y soluciones logísticas, con ${YEARS_IN_BUSINESS} años de trayectoria en el comercio exterior paraguayo.`,
   body: 'Nuestro enfoque es claro: agilidad, transparencia y soluciones reales para importadores y exportadores.',
   caption: 'Con sede en Asunción, cubrimos todos los puertos del país.',
+  // Below the copy: a few of the main ports by name, then the rest in one line (client, 2026-10-07).
+  ports: {
+    label: 'Puertos principales',
+    names: ['Terport', 'Puerto Fénix', 'Caacupemí', 'Itá Enramada', 'Puerto Seguro', 'Aeropuerto Silvio Pettirossi'],
+    more: 'Y muchos más en Alto Paraná, Itapúa y el Chaco.',
+  },
 };
 
 /**
- * Main ports and customs points we cover, drawn as dots on the map in "¿Quiénes somos?".
- * The client wants only the main ones shown (2026-10-07): they work in every port. Asunción's
- * own ports are represented by the office pin. Still to add: the one in the Chaco (client to name it).
+ * Ports and customs points drawn as dots on the map in "¿Quiénes somos?" (client's list, 2026-10-07).
+ * The map opens close on Gran Asunción and zooms out to the whole country:
+ * - `near: true` ports (around Asunción) are on screen from the start; their names show only
+ *   while the map is zoomed in, then fade, leaving the dots as a cluster around the office.
+ * - the others (regional) appear, with their names, as the map zooms out.
+ * The biggest ones are also named in `about.ports`.
+ * Not drawn yet because their location isn't confirmed: PAKSA (Kanonnikoff), Puerto San José
+ * (Empedril) and Puerto Seguro Terrestre. Ask the client for the address, then add them here.
  *
  * at    = [longitude, latitude] in decimal degrees. Google Maps copies them as "latitude, longitude": swap them.
  * label = side of the dot the name sits on ('right' if omitted). Use it to separate names that
  *         overlap, or 'none' to show only the dot.
  */
-export type Port = { name: string; at: [number, number]; label?: 'right' | 'left' | 'above' | 'below' | 'none' };
+// inland: not on the river (riverside ports near Asunción are snapped onto the drawn river, see paraguaymap.ts)
+export type Port = { name: string; at: [number, number]; label?: 'right' | 'left' | 'above' | 'below' | 'none'; near?: boolean; inland?: boolean };
 export const ports: Port[] = [
   { name: 'Encarnación', at: [-55.87, -27.33], label: 'left' },
   { name: 'Ciudad del Este', at: [-54.61, -25.51], label: 'left' },
   { name: 'Puerto Falcón', at: [-57.68, -25.24], label: 'above' }, // across the river from Asunción, next to Clorinda
+  // Asunción and around (positions approximate, to the nearest couple of km)
+  { name: 'Itá Enramada', at: [-57.675, -25.335], label: 'left', near: true },
+  { name: 'Caacupemí', at: [-57.645, -25.255], label: 'above', near: true },
+  { name: 'Puerto Fénix', at: [-57.565, -25.185], label: 'right', near: true }, // Mariano Roque Alonso
+  { name: 'Terport San Antonio', at: [-57.555, -25.405], label: 'right', near: true },
+  { name: 'Puerto Seguro Fluvial', at: [-57.575, -25.495], label: 'right', near: true }, // Villeta
+  { name: 'Aeropuerto Silvio Pettirossi', at: [-57.519, -25.240], label: 'right', near: true, inland: true }, // Luque
 ];
 
 /**
@@ -110,21 +129,17 @@ export const steps = [
 
 // "Rubros": the sectors the agency's clients work in (no client names are shown).
 export const sectorsIntro = {
-  title: 'Rubros que atendemos',
+  title: 'Experiencia en distintos sectores',
   lede: 'Acompañamos a pymes y grandes industrias en las importaciones y exportaciones de cada rubro.',
 };
-// Each card's "Consultar" button opens WhatsApp with the approved greeting plus the sector's name.
-export const sectorWhatsapp = (name: string) =>
-  whatsappWith(`${WHATSAPP_TEXT.slice(0, -1)} para el rubro ${name.toLowerCase()}.`);
 
-// ncm = HS/NCM tariff chapters typical of the sector, shown on each card (to confirm with the client).
 export const sectors = [
-  { name: 'Manufactura', img: '/img/sectores/manufactura.png', goods: 'Maquinaria, insumos industriales y plásticos', ncm: ['39', '84'] },
-  { name: 'Tecnología', img: '/img/sectores/tecnologia.png', goods: 'Equipos informáticos y electrónica', ncm: ['84', '85'] },
-  { name: 'Salud', img: '/img/sectores/salud.png', goods: 'Medicamentos e insumos médicos', ncm: ['30', '90'] },
-  { name: 'Agro', img: '/img/sectores/agro.png', goods: 'Granos, semillas y fertilizantes', ncm: ['10', '12', '31'] },
-  { name: 'Repuestos', img: '/img/sectores/repuestos.png', goods: 'Autopartes y repuestos', ncm: ['87'] },
-  { name: 'Consumo masivo', img: '/img/sectores/consumo.png', goods: 'Alimentos, bebidas y cosmética', ncm: ['21', '22', '33'] },
+  { name: 'Manufactura', img: '/img/sectores/manufactura.png', goods: 'Maquinaria, insumos industriales y plásticos' },
+  { name: 'Tecnología', img: '/img/sectores/tecnologia.png', goods: 'Equipos informáticos y electrónica' },
+  { name: 'Salud', img: '/img/sectores/salud.png', goods: 'Medicamentos e insumos médicos' },
+  { name: 'Agro', img: '/img/sectores/agro.png', goods: 'Granos, semillas y fertilizantes' },
+  { name: 'Repuestos', img: '/img/sectores/repuestos.png', goods: 'Autopartes y repuestos' },
+  { name: 'Consumo masivo', img: '/img/sectores/consumo.png', goods: 'Alimentos, bebidas y cosmética' },
 ];
 
 /**
