@@ -1,31 +1,35 @@
 // All page copy lives here so the client's text can change without touching layout.
 //
-// Dates are never typed by hand: everything derives from FOUNDED and the current year.
-// They're computed at build time and refreshed in the browser on load (see Base.astro),
-// so the page stays correct even if the site isn't rebuilt for a while.
-// In copy, write {years} for the years in business; <Copy> swaps in a live value.
+// Dates derive from FOUNDED and the current year, computed at build time and refreshed in the
+// browser on load (see Base.astro), so they stay correct even if the site isn't rebuilt.
+// The exception is the years in business: see YEARS_IN_BUSINESS.
 
-const FOUNDED = 1976;
+const FOUNDED = 1977;
 const YEAR = new Date().getFullYear();
+
+// Fixed at the client's request (2026-10-07) until he confirms the figure. Note that
+// YEAR - FOUNDED gives 49 in 2026, so check this whenever FOUNDED or the figure changes.
+const YEARS_IN_BUSINESS = 50;
 
 // WhatsApp goes to Mateo's personal line until the agency has a corporate number.
 // Change it here only: country code + number, digits only.
 const WHATSAPP = '595981407826';
-const WHATSAPP_TEXT = 'Hola, quisiera saber más sobre los servicios y solicitar un presupuesto.';
+const WHATSAPP_TEXT = 'Hola, ¿cómo están? Me gustaría conocer un poco más sobre sus servicios.';
+const whatsappWith = (text: string) => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 
 export const site = {
   name: 'Agencia Bautista',
-  legal: 'Agencia Bautista E.A.S.',
+  legal: 'Agencia Bautista E.A.S.', // footer only: everywhere else the page says "Agencia Bautista"
   // The tagline and the founding year appear once on the page, in the hero (and in og-image.jpg).
   tagline: `Confianza que cruza fronteras desde ${FOUNDED}.`,
   founded: FOUNDED,
   year: YEAR,
   years: YEAR - FOUNDED,
   phones: [
-    { label: '(0981) 402-038', tel: '+595981402038' },
     { label: '(0981) 407-826', tel: '+595981407826' },
+    { label: '(0995) 683-696', tel: '+595995683696' },
   ],
-  whatsapp: `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(WHATSAPP_TEXT)}`,
+  whatsapp: whatsappWith(WHATSAPP_TEXT),
   emails: ['operaciones@agenciabautista.com.py', 'mateo.bautista@agenciabautista.com.py'], // the first one gets the "Enviar un email" button
   instagram: 'https://www.instagram.com/agenciabautistapy/',
   address: ['Mayor Bullo 540 entre Azara y Cerro Corá', 'Ofic. 4 (Planta Alta), Asunción'],
@@ -34,14 +38,15 @@ export const site = {
 
 export const about = {
   // The only place the years in business are stated; keep it that way.
-  lead: `${site.legal} es una empresa especializada en despachos aduaneros y soluciones logísticas, con {years} años de trayectoria en el comercio exterior paraguayo.`,
+  lead: `${site.name} es una empresa especializada en despachos aduaneros y soluciones logísticas, con ${YEARS_IN_BUSINESS} años de trayectoria en el comercio exterior paraguayo.`,
   body: 'Nuestro enfoque es claro: agilidad, transparencia y soluciones reales para importadores y exportadores.',
   caption: 'Con sede en Asunción, cubrimos todos los puertos del país.',
 };
 
 /**
- * Ports and customs points we cover, drawn as dots on the map in "¿Quiénes somos?".
- * Empty until the client sends the list: meanwhile the map shows the country and the office.
+ * Main ports and customs points we cover, drawn as dots on the map in "¿Quiénes somos?".
+ * The client wants only the main ones shown (2026-10-07): they work in every port. Asunción's
+ * own ports are represented by the office pin. Still to add: the one in the Chaco (client to name it).
  *
  * at    = [longitude, latitude] in decimal degrees. Google Maps copies them as "latitude, longitude": swap them.
  * label = side of the dot the name sits on ('right' if omitted). Use it to separate names that
@@ -49,8 +54,32 @@ export const about = {
  */
 export type Port = { name: string; at: [number, number]; label?: 'right' | 'left' | 'above' | 'below' | 'none' };
 export const ports: Port[] = [
-  // { name: 'Encarnación', at: [-55.87, -27.33], label: 'left' },
+  { name: 'Encarnación', at: [-55.87, -27.33], label: 'left' },
+  { name: 'Ciudad del Este', at: [-54.61, -25.51], label: 'left' },
+  { name: 'Puerto Falcón', at: [-57.68, -25.24], label: 'above' }, // across the river from Asunción, next to Clorinda
 ];
+
+/**
+ * "Nuestro equipo": design approved, section hidden for now. Set `published` to true to show it
+ * (and its nav link) everywhere, dev included.
+ * The client wants the group photo without names for the moment (2026-10-07), and the repo is
+ * public, so no names are kept here. Jorge has the approved list; each area takes
+ * { name, role? } entries in `people`.
+ */
+export const team: {
+  published: boolean; lede: string; photo: string;
+  areas: { name: string; people: { name: string; role?: string }[] }[];
+} = {
+  published: false,
+  lede: 'Las personas que están detrás de cada operación.',
+  photo: '', // group photo in public/img/ (landscape, about 1600px wide); a placeholder shows while empty
+  areas: [
+    { name: 'Dirección', people: [] },
+    { name: 'Comercio exterior', people: [] },
+    { name: 'Administración y coordinación', people: [] },
+  ],
+};
+export const showTeam = team.published;
 
 export type Tone = 'sky' | 'card' | 'white' | 'deep';
 
@@ -79,7 +108,16 @@ export const steps = [
   { title: 'Post-servicio', detail: 'Apoyo continuo después del despacho.' },
 ];
 
-// ncm = HS/NCM tariff chapters typical of the sector (to confirm with the client).
+// "Rubros": the sectors the agency's clients work in (no client names are shown).
+export const sectorsIntro = {
+  title: 'Rubros que atendemos',
+  lede: 'Acompañamos a pymes y grandes industrias en las importaciones y exportaciones de cada rubro.',
+};
+// Each card's "Consultar" button opens WhatsApp with the approved greeting plus the sector's name.
+export const sectorWhatsapp = (name: string) =>
+  whatsappWith(`${WHATSAPP_TEXT.slice(0, -1)} para el rubro ${name.toLowerCase()}.`);
+
+// ncm = HS/NCM tariff chapters typical of the sector, shown on each card (to confirm with the client).
 export const sectors = [
   { name: 'Manufactura', img: '/img/sectores/manufactura.png', goods: 'Maquinaria, insumos industriales y plásticos', ncm: ['39', '84'] },
   { name: 'Tecnología', img: '/img/sectores/tecnologia.png', goods: 'Equipos informáticos y electrónica', ncm: ['84', '85'] },

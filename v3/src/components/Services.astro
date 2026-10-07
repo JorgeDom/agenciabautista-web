@@ -97,7 +97,7 @@ const place = (i: number) => `--row:${i < 3 ? 2 : 1};--col:${(i % 3) + 1}`;
   .rig { display: none; }
   .cont {
     display: grid; align-content: space-between; gap: 18px;
-    min-height: 168px; padding: 16px 64px 18px 20px; height: 100%;
+    min-height: 10.5rem; padding: 1rem 4rem 1.125rem 1.25rem; height: 100%;
     will-change: transform;
   }
   .cont h3 { font: 800 clamp(1.45rem, 2.4vw, 1.9rem)/1.12 var(--display); font-stretch: 112%; }
@@ -120,7 +120,7 @@ const place = (i: number) => `--row:${i < 3 ? 2 : 1};--col:${(i % 3) + 1}`;
   /* stacked: almost no gap between rows, a narrow aisle between columns */
   .staged .slots { gap: 5px 16px; }
   .staged .slot { position: relative; grid-row: var(--row); grid-column: var(--col); }
-  .staged .cont { visibility: hidden; min-height: clamp(150px, 21vh, 190px); }
+  .staged .cont { visibility: hidden; min-height: clamp(150px, 21vh, 15rem); }
   /* ground line under the bottom row */
   .staged .slots::after {
     content: ""; grid-row: 3; grid-column: 1 / -1; height: 2px; margin-top: 3px;

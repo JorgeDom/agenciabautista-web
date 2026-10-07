@@ -66,7 +66,10 @@ const icons = {
   .lede { margin-block: 1.2rem 2rem; font-size: 1.1rem; }
   /* icon-only buttons: round, same colours as the text buttons elsewhere */
   .cta { gap: 14px; }
-  .cta .btn { width: 58px; height: 58px; padding: 0; }
+  .cta .btn { width: 3.625rem; height: 3.625rem; padding: 0; }
+  /* the size attributes on each <svg> are the fallback; these let the icons grow on big screens */
+  .cta :global(svg) { width: 1.625rem; height: 1.625rem; }
+  .cta .btn--wa :global(svg), .wa :global(svg) { width: 1.875rem; height: 1.875rem; }
   .map {
     margin-top: 24px; aspect-ratio: 16 / 10;
     border-radius: 6px; overflow: hidden; border: 1px solid var(--d-line); background: var(--card);
@@ -81,10 +84,10 @@ const icons = {
 
   .foot { background: #020c19; color: var(--d-muted); padding-block: 36px; font-size: .9rem; }
   .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
-  .foot img { height: 50px; width: auto; }
+  .foot img { height: 3.125rem; width: auto; }
 
   .wa {
-    position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 58px; height: 58px; border-radius: 50%;
+    position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 3.625rem; height: 3.625rem; border-radius: 50%;
     display: grid; place-items: center; background: var(--wa); color: var(--deep);
     box-shadow: 0 8px 24px rgba(4, 20, 41, .35);
   }

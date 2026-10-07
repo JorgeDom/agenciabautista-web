@@ -35,16 +35,16 @@ const icons = [badgeCheck, handshake, zap, landmark, shieldCheck].map(clean);
   .why { background: var(--alt); color: var(--body); padding-block: var(--section); }
   .grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(24px, 7vw, 110px); align-items: center; }
   .grid > * { min-width: 0; }
-  .globe { display: block; width: 100%; max-width: 440px; justify-self: center; }
+  .globe { display: block; width: 100%; max-width: 27.5rem; justify-self: center; }
   .globe img { width: 100%; }
   .h2 { margin-bottom: 1.8rem; }
   .reasons li {
-    display: grid; grid-template-columns: 40px 1fr; gap: 18px; align-items: center;
-    padding-block: 18px; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 2.5rem 1fr; gap: 1.125rem; align-items: center;
+    padding-block: 1.125rem; border-top: 1px solid var(--line);
   }
   .reasons li:last-child { border-bottom: 1px solid var(--line); }
-  .icon { display: grid; place-items: center; width: 40px; height: 40px; color: var(--sky-d); }
-  .icon :global(svg) { width: 30px; height: 30px; stroke-width: 1.8; }
+  .icon { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; color: var(--sky-d); }
+  .icon :global(svg) { width: 1.875rem; height: 1.875rem; stroke-width: 1.8; }
   .reasons strong { font-weight: 600; font-size: 1.12rem; color: var(--h); }
   @media (max-width: 900px) {
     .grid { grid-template-columns: 1fr; }

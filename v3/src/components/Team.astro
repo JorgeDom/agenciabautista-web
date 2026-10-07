@@ -1,0 +1,110 @@
+---
+// One panoramic panel: the group photo on the left fades into blue, and the team, listed by
+// area, sits over the blue on the right. Copy and the publish switch live in `team` (site.ts).
+import { team, site } from '../data/site';
+---
+<section class="team light" id="equipo" data-team>
+  <div class="wrap">
+    <header class="head">
+      <h2 class="h2">Nuestro equipo</h2>
+      <p class="lede">{team.lede}</p>
+    </header>
+    <div class="panel">
+      <figure class="photo">
+        {team.photo
+          ? <img src={team.photo} alt={`El equipo de ${site.name}`} width="1920" height="1080" loading="lazy" decoding="async" />
+          : <div class="ph"><span>Foto grupal del equipo</span></div>}
+      </figure>
+      <div class="areas">
+        {team.areas.map(a => (
+          <section>
+            <h3>{a.name}</h3>
+            <ul>
+              {a.people.map(p => <li><strong>{p.name}</strong>{p.role && <span>{p.role}</span>}</li>)}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
+  const sec = document.querySelector<HTMLElement>('[data-team]');
+  if (sec && !reduceMotion()) {
+    const photo = sec.querySelector<HTMLElement>('.photo')!;
+    const rows = [...sec.querySelectorAll<HTMLElement>('.areas h3, .areas li')];
+    const ease = (t: number) => t * t * (3 - 2 * t);
+    // Every piece is driven by its own position on screen, so the photo wipes open and the names
+    // cascade in the same way whether they sit side by side (desktop) or stacked (phones).
+    // Each starts just above the bottom edge and takes `span` of the screen height to finish; the
+    // names finish quickly so the last ones are done by the time the panel is centred on screen.
+    onScroll(vh => {
+      const enter = (el: Element, span: number) => ease(clamp((vh * .96 - el.getBoundingClientRect().top) / (vh * span)));
+      photo.style.setProperty('--p', enter(photo, .6).toFixed(4));
+      rows.forEach(r => r.style.setProperty('--t', enter(r, .2).toFixed(4)));
+    });
+  }
+</script>
+
+<style>
+  .team { background: var(--alt); color: var(--body); padding-block: var(--section); }
+  .head { display: grid; gap: 1rem; margin-bottom: clamp(28px, 4vw, 3rem); }
+
+  .panel {
+    position: relative; display: grid; grid-template-columns: 1.7fr 1fr; align-items: center;
+    min-height: clamp(24rem, 36vw, 40rem); border-radius: 6px; overflow: hidden; color: var(--d-text);
+    /* the blue the photo fades into, with the faint ribs of a container side */
+    background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .03) 0 3px, transparent 3px 12px), linear-gradient(100deg, var(--card), var(--navy));
+  }
+
+  /* The photo covers the left 70% and dissolves into the panel before it reaches the list, so
+     frame the team towards the left. --p (0 → 1): it wipes open behind a sky-blue edge and
+     settles from a slight zoom. */
+  .photo {
+    position: absolute; inset: 0 30% 0 0; overflow: hidden;
+    clip-path: inset(0 calc((1 - var(--p, 1)) * 100%) 0 0);
+  }
+  .photo img, .photo .ph {
+    width: 100%; height: 100%; transform: scale(calc(1.1 - var(--p, 1) * .1));
+    mask-image: linear-gradient(90deg, #000 58%, transparent);
+  }
+  .photo img { object-fit: cover; object-position: left center; }
+  /* stand-in until the photo arrives: lighter than the panel so the fade can be judged */
+  .photo .ph { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .08) 0 2px, transparent 2px 14px), linear-gradient(160deg, var(--sky-d), var(--card)); }
+  .photo .ph span { color: #fff; font-size: .95rem; }
+  .photo::after {
+    content: ""; position: absolute; inset-block: 0; left: calc(var(--p, 1) * 100% - 5px); width: 5px;
+    background: var(--sky); opacity: clamp(0, (1 - var(--p, 1)) * 8, 1);
+  }
+
+  .areas { grid-column: 2; position: relative; display: grid; gap: 1.6rem; padding: clamp(1.5rem, 3vw, 3rem); }
+  /* --t (0 → 1) per row: its rule draws across from the left, the name rises in, the role follows */
+  h3 {
+    font: 700 .82rem/1 var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--sky-l); margin: 0 0 .6rem;
+    opacity: var(--t, 1);
+  }
+  li {
+    --rule: linear-gradient(var(--d-line), var(--d-line)); --w: calc(var(--t, 1) * 100%);
+    padding-block: .7rem; background: var(--rule) 0 0 / var(--w) 1px no-repeat;
+  }
+  li:last-child { background: var(--rule) 0 0 / var(--w) 1px no-repeat, var(--rule) 0 100% / var(--w) 1px no-repeat; }
+  strong {
+    display: block; font: 700 1.15rem/1.25 var(--display); font-stretch: 108%; color: #fff;
+    opacity: var(--t, 1); transform: translateY(calc((1 - var(--t, 1)) * 22px));
+  }
+  li span {
+    display: block; margin-top: 2px; font-size: .95rem; color: var(--d-muted);
+    opacity: clamp(0, var(--t, 1) * 2.5 - 1.5, 1);
+  }
+
+  /* one column: the photo sits on top and fades downwards into the list */
+  @media (max-width: 900px) {
+    .panel { grid-template-columns: 1fr; min-height: 0; }
+    .photo { position: relative; inset: auto; aspect-ratio: 4 / 3; }
+    .photo img, .photo .ph { mask-image: linear-gradient(180deg, #000 62%, transparent); }
+    .photo img { object-position: center; }
+    .areas { grid-column: 1; padding-top: 0; }
+  }
+</style>

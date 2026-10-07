@@ -1,9 +1,11 @@
 ---
+import { showTeam } from '../data/site';
 const links = [
   { href: '#nosotros', label: 'Nosotros' },
   { href: '#servicios', label: 'Servicios' },
   { href: '#proceso', label: 'Proceso' },
-  { href: '#sectores', label: 'Clientes' },
+  ...(showTeam ? [{ href: '#equipo', label: 'Equipo' }] : []),
+  { href: '#sectores', label: 'Rubros' },
 ];
 ---
 <header class="top">
@@ -92,16 +94,16 @@ const links = [
   @media (prefers-reduced-motion: reduce) { .top { transition: none; } }
   .top.solid { background: rgba(4, 20, 41, .92); backdrop-filter: blur(10px); }
   .bar { display: flex; align-items: center; justify-content: space-between; height: var(--header); }
-  .brand img { height: 50px; width: auto; }
-  ul { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 32px); }
+  .brand img { height: 3.125rem; width: auto; }
+  ul { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 2rem); }
   a:not(.btn) { text-decoration: none; font-weight: 500; font-size: .98rem; color: var(--d-text); }
   a:not(.btn):hover { color: var(--sky-l); }
   .toggle { display: none; }
 
-  .route { position: relative; height: 16px; margin-top: -8px; }
+  .route { position: relative; height: 1rem; margin-top: -.5rem; }
   .route::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--d-line); }
   .done { position: absolute; left: 0; top: calc(50% - 1px); height: 2px; width: calc(var(--page, 0) * 100%); background: var(--sky); }
-  .ship { position: absolute; top: 0; width: 34px; height: 14px; fill: var(--sky-l); left: calc(var(--page, 0) * (100% - 34px)); }
+  .ship { position: absolute; top: 0; width: 2.125rem; height: .875rem; fill: var(--sky-l); left: calc(var(--page, 0) * (100% - 2.125rem)); }
 
   @media (max-width: 720px) {
     .brand img { height: 40px; }

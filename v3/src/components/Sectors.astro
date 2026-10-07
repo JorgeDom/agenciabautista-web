@@ -1,18 +1,30 @@
 ---
-import { sectors } from '../data/site';
+// "Rubros": one card per sector the agency's clients work in. Each card is a lit stage for the
+// sector's product render (big, cropped by the card's edge), with the copy top-left and a frosted
+// bar at the bottom: the NCM chapters and a button that opens WhatsApp about that sector.
+import { sectors, sectorsIntro, sectorWhatsapp } from '../data/site';
 ---
 <section class="sectors" id="sectores" data-sectors>
-  <div class="wrap layout">
-    <div class="intro">
-      <h2 class="h2">Clientes que confían en nosotros</h2>
-      <p class="lede">Atendemos desde pymes hasta grandes industrias de los sectores:</p>
-      <p class="list">{sectors.map((s, i) => <>{i > 0 && ' '}<span>{s.name}</span></>)}</p>
-    </div>
+  <div class="wrap">
+    <header class="head">
+      <h2 class="h2">{sectorsIntro.title}</h2>
+      <p class="lede">{sectorsIntro.lede}</p>
+    </header>
     <ul class="cards">
-      {sectors.map((s, i) => (
-        <li class="card" style={`--i:${i}`}>
-          <img class="cargo" src={s.img} alt="" width="1254" height="1254" loading="lazy" decoding="async" />
-          <span class="name">{s.name}</span>
+      {sectors.map(s => (
+        <li class="card">
+          <img class="obj" src={s.img} alt="" width="1254" height="1254" loading="lazy" decoding="async" />
+          <div class="copy">
+            <h3>{s.name}</h3>
+            <p class="goods">{s.goods}</p>
+          </div>
+          <div class="bar">
+            <p class="ncm"><small>Capítulos NCM</small>{s.ncm.join(' · ')}</p>
+            <a class="go" href={sectorWhatsapp(s.name)} target="_blank" rel="noopener" aria-label={`Consultar por WhatsApp sobre el rubro ${s.name}`}>
+              Consultar
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </div>
         </li>
       ))}
     </ul>
@@ -22,53 +34,107 @@ import { sectors } from '../data/site';
 <script>
   import { onScroll, clamp, reduceMotion } from '../scripts/scroll';
   const list = document.querySelector<HTMLElement>('[data-sectors] .cards')!;
-  // one progress value for the row; each card offsets it by its index for a left-to-right rise
-  if (reduceMotion()) list.style.setProperty('--o', '1');
-  else onScroll(vh => {
-    const r = list.getBoundingClientRect();
-    list.style.setProperty('--o', clamp((vh * 0.95 - r.top) / (vh * 0.5)).toFixed(4));
-  });
+  const cards = [...list.querySelectorAll<HTMLElement>('.card')];
+  const ease = (t: number) => t * t * (3 - 2 * t);
+
+  // Per card: --t (0 → 1) rises it into place as it enters, cards further right a beat later;
+  // --y (-1 → 1) as it crosses the screen drifts the product upwards, a slow parallax.
+  // On phones the cards are a horizontal carousel, so only the first card's column delay applies.
+  if (!reduceMotion()) {
+    const frame = (vh: number) => {
+      const box = list.getBoundingClientRect();
+      for (const c of cards) {
+        const r = c.getBoundingClientRect();
+        const lag = clamp((r.left - box.left) / box.width) * .5;
+        c.style.setProperty('--t', ease(clamp((vh * .98 - r.top) / (vh * .35) - lag)).toFixed(4));
+        c.style.setProperty('--y', clamp((vh / 2 - (r.top + r.height / 2)) / vh * 2, -1, 1).toFixed(4));
+      }
+    };
+    onScroll(frame);
+    list.addEventListener('scroll', () => frame(innerHeight), { passive: true });
+  }
 </script>
 
 <style>
   .sectors { background: var(--navy); padding-block: var(--section); }
-  .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(32px, 4vw, 56px); align-items: center; }
-  .intro { display: grid; gap: 1rem; }
-  .intro > * { min-width: 0; }
-  .intro .h2 { font-size: clamp(2rem, 3.4vw, 3rem); }
-  .list { color: #fff; font-weight: 600; line-height: 1.6; }
-  /* keep each separator with the word before it, so no line starts with "·" */
-  .list span { white-space: nowrap; }
-  .list span:not(:last-child)::after { content: " ·"; color: var(--sky-l); }
+  .head { display: grid; grid-template-columns: auto 1fr; gap: 16px 56px; align-items: end; margin-bottom: clamp(28px, 4vw, 3rem); }
+  .head > * { min-width: 0; }
 
-  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 1.5rem); }
+
   .card {
-    --t: clamp(0, var(--o, 1) * 1.6 - var(--i) * .12, 1); /* staggered by position */
-    position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 6px;
+    position: relative; isolation: isolate; overflow: hidden;
+    aspect-ratio: 4 / 5; border-radius: 16px;
+    /* a spotlight behind the product, a cooler fill from the top, the ribs of a container side */
     background:
-      radial-gradient(ellipse 80% 55% at 50% 40%, rgba(77, 184, 244, .3), transparent 70%),
-      repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 3px, transparent 3px 12px),
-      linear-gradient(180deg, #0d3463, var(--deep));
-    border: 1px solid var(--d-line);
-    opacity: calc(.15 + var(--t) * .85);
-    transform: translateY(calc((1 - var(--t)) * 36px));
+      radial-gradient(circle at 72% 64%, rgba(27, 164, 240, .5), transparent 52%),
+      radial-gradient(ellipse at 10% 0%, rgba(77, 184, 244, .16), transparent 55%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .025) 0 3px, transparent 3px 12px),
+      linear-gradient(165deg, #10407a, var(--deep) 72%);
+    box-shadow: inset 0 0 0 1px rgba(143, 210, 248, .16), 0 24px 48px -24px rgba(0, 0, 0, .7);
+    opacity: var(--t, 1);
+    transform: translateY(calc((1 - var(--t, 1)) * 48px)) scale(calc(.96 + var(--t, 1) * .04));
   }
-  .cargo {
-    /* contain, not cover: the source images are square and untouched, so this
-       never crops them — the card's own background shows at the sides instead */
-    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
-    filter: drop-shadow(0 14px 16px rgba(0, 0, 0, .45));
-    transition: transform .4s cubic-bezier(.2, .7, .2, 1);
+  /* keeps the copy legible where the product reaches up behind it */
+  .card::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(4, 20, 41, .6), transparent 42%);
   }
-  .card:hover .cargo { transform: scale(1.04); }
-  .name {
-    position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 14px 14px;
-    background: linear-gradient(180deg, transparent, rgba(4, 20, 41, .92) 55%);
-    font: 700 clamp(1rem, 1.3vw, 1.2rem)/1.15 var(--display); font-stretch: 105%; color: #fff; text-align: center;
+
+  .obj {
+    position: absolute; z-index: 0; width: 84%; max-width: none; right: -14%; bottom: 5%;
+    filter: drop-shadow(0 26px 30px rgba(0, 0, 0, .55));
+    transform:
+      translateY(calc(var(--y, 0) * -28px + (1 - var(--t, 1)) * 40px))
+      rotate(calc(var(--y, 0) * -2deg))
+      scale(var(--s, 1));
+    transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+  }
+
+  .copy { position: relative; z-index: 1; padding: clamp(1.25rem, 2vw, 1.75rem); }
+  h3 { font: 800 clamp(1.7rem, 2.3vw, 2.3rem)/1 var(--display); font-stretch: 112%; color: #fff; }
+  .goods { margin-top: .6rem; max-width: 15rem; font-size: .98rem; line-height: 1.4; color: var(--d-text); }
+
+  .bar {
+    position: absolute; z-index: 1; left: .85rem; right: .85rem; bottom: .85rem;
+    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+    padding: .55rem .55rem .55rem 1rem; border-radius: 12px;
+    background: rgba(7, 30, 61, .5); border: 1px solid rgba(255, 255, 255, .12);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  }
+  .ncm { color: #fff; font: 700 1rem/1.15 var(--display); font-stretch: 105%; font-variant-numeric: tabular-nums; }
+  .ncm small { display: block; margin-bottom: .2rem; font: 500 .72rem/1 var(--text); letter-spacing: .04em; color: var(--d-muted); }
+  .go {
+    display: inline-flex; align-items: center; gap: .45rem; flex-shrink: 0;
+    min-height: 2.75rem; padding: 0 1.1rem; border-radius: 999px;
+    background: #fff; color: var(--navy); font: 600 .95rem/1 var(--text); text-decoration: none;
+    transition: background-color .2s;
+  }
+  .go svg { width: 1rem; height: 1rem; transition: transform .3s cubic-bezier(.2, .7, .2, 1); }
+  .go:hover { background: var(--steel); }
+  .go:hover svg, .go:focus-visible svg { transform: translateX(4px); }
+
+  @media (hover: hover) {
+    .card:hover .obj { --s: 1.06; }
   }
 
   @media (max-width: 1100px) {
-    .layout { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
-  @media (prefers-reduced-motion: reduce) { .cargo { transition: none; } }
+  @media (max-width: 900px) {
+    .head { grid-template-columns: 1fr; }
+  }
+  /* phones: a swipeable row, each card most of the screen wide so the next one peeks in */
+  @media (max-width: 720px) {
+    .cards {
+      grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%;
+      overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+      margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter);
+    }
+    .cards::-webkit-scrollbar { display: none; }
+    .card { scroll-snap-align: start; aspect-ratio: 4 / 5.2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .obj, .go, .go svg { transition: none; }
+  }
 </style>

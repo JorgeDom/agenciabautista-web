@@ -26,12 +26,19 @@
   --text: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --stencil: "Saira Stencil One", Impact, "Arial Black", sans-serif;
 
-  --gutter: clamp(16px, 5vw, 64px);
+  --gutter: clamp(16px, 5vw, 4rem);
   --max: 1200px;
-  --section: clamp(88px, 12vw, 160px);
-  --header: 76px;
+  --section: clamp(88px, 12vw, 10rem);
+  --header: 4.75rem;
 }
 @media (max-width: 720px) { :root { --header: 64px; } }
+
+/* Big screens: above 1600px wide the page grows with the screen instead of staying a 1200px
+   column of 17px type. The root font-size scales everything set in rem (20px root at 2560px
+   wide) and the content column widens to about 70% of the screen. Both level off near 3840px.
+   Below 1600px neither rule changes anything. */
+html { font-size: clamp(100%, calc(100% + (100vw - 1600px) * .00417), 160%); }
+:root { --max: clamp(1200px, calc(1200px + (100vw - 1600px) * .62), 2600px); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: var(--header); }
@@ -68,11 +75,11 @@ main > section { overflow-x: clip; }
 /* buttons */
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 48px; padding: 0 1.4rem; border-radius: 999px; border: 1.5px solid transparent;
+  min-height: 3rem; padding: 0 1.4rem; border-radius: 999px; border: 1.5px solid transparent;
   font: 600 1rem/1 var(--text); text-decoration: none; white-space: nowrap;
   transition: background-color .2s, border-color .2s, color .2s;
 }
-.btn--sm { min-height: 40px; padding: 0 1.1rem; font-size: .95rem; }
+.btn--sm { min-height: 2.5rem; padding: 0 1.1rem; font-size: .95rem; }
 .btn--sky { background: var(--sky); color: var(--navy); }
 .btn--sky:hover { background: var(--sky-l); }
 .btn--ghost { border-color: var(--d-line); color: #fff; }
@@ -90,11 +97,11 @@ main > section { overflow-x: clip; }
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .12), inset 0 4px 0 rgba(255, 255, 255, .12);
 }
 .box::after {
-  content: ""; position: absolute; top: 8px; bottom: 8px; right: 10px; width: 26px;
+  content: ""; position: absolute; top: .5rem; bottom: .5rem; right: .625rem; width: 1.625rem;
   border-left: 2px solid rgba(0, 0, 0, .18);
   background:
-    linear-gradient(currentColor, currentColor) 7px 0 / 2px 100% no-repeat,
-    linear-gradient(currentColor, currentColor) 17px 0 / 2px 100% no-repeat;
+    linear-gradient(currentColor, currentColor) .4375rem 0 / 2px 100% no-repeat,
+    linear-gradient(currentColor, currentColor) 1.0625rem 0 / 2px 100% no-repeat;
   opacity: .35;
 }
 .box .code { font: 400 .8rem/1 var(--stencil); letter-spacing: .08em; opacity: .85; }
