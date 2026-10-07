@@ -68,6 +68,10 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
         <h2 class="h2">¿Quiénes somos?</h2>
         <p class="big"><Copy text={about.lead} /></p>
         <p>{about.body}</p>
+        <p class="sign">
+          <span class="sign-name">{about.signature.name}</span>
+          <span class="sign-role">{about.signature.role}</span>
+        </p>
         <div class="ports">
           <p class="ports-label"><span class="dot" aria-hidden="true"></span>{about.ports.label}</p>
           <ul>{about.ports.names.map(n => <li>{n}</li>)}</ul>
@@ -142,6 +146,12 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
   .copy { display: grid; gap: 1.1rem; max-width: 30rem; }
   .h2 { color: var(--h); }
   .big { font-size: 1.25rem; color: var(--h); }
+
+  /* the founder signs off the text above: a short rule, his name, his title */
+  .sign { display: grid; gap: .15rem; padding-left: 2.6rem; position: relative; margin-top: -.2rem; }
+  .sign::before { content: ""; position: absolute; left: 0; top: .8em; width: 1.8rem; height: 2px; background: var(--sky-d); }
+  .sign-name { font: 700 1.15rem/1.3 var(--display); font-stretch: 108%; color: var(--h); }
+  .sign-role { font-size: .9rem; color: var(--muted); }
 
   /* the main ports by name; the dot matches the unnamed dots around Asunción on the map */
   .ports { padding-top: 1.1rem; border-top: 1px solid var(--line); }

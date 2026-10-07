@@ -11,10 +11,9 @@ Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge'
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `046b5d4` (2026-10-07), which
-  shipped sessions 2 and 3. The team section is built but hidden.
-- **Not committed, not deployed:** session 4 (client feedback of 2026-10-07 afternoon: Rubros
-  wording and simpler cards, Process subtitle, the ports on the map). Built and checked locally.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `7085c8e` (2026-10-07), which
+  shipped session 4 (`046b5d4` shipped sessions 2 and 3). The team section is built but hidden.
+- **Not committed, not deployed:** session 5, the founder's sign-off in Quiénes somos.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
   - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
   - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
@@ -22,7 +21,6 @@ Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge'
   - The confirmed number of years in business ("50" stays fixed until then; with 1977 as the
     founding year the computed figure would be 49).
   - Whether the new number (0995) 683-696 also takes WhatsApp, and whose it is.
-  - Whether Quiénes somos should name the founder, now that the team goes without names.
 - Jorge has not yet reviewed the big-screen scaling on a real large monitor.
 
 ## 2. The repo
@@ -255,7 +253,16 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-07, session 4 (afternoon): NOT committed
+### 2026-10-07, session 5: NOT committed
+
+- **Founder in Quiénes somos.** At Jorge's request, the text now ends with a sign-off: a short sky
+  rule, "Alfredo Bautista" and "Fundador y director · Despachante de Aduanas" (`about.signature`
+  in `site.ts`), above the ports list. The client's first message allowed naming him there with
+  that role, and the title was approved on 2026-10-07. No year is repeated in it.
+- **Checked:** production build; screenshots at 1440×900, 1366×768 and 390 wide.
+- Files: `site.ts`, `About.astro`, this file.
+
+### 2026-10-07, session 4 (afternoon): shipped as `7085c8e`
 
 Asked for (client feedback after `046b5d4`): heading "Experiencia en distintos sectores" instead of
 "Rubros que atendemos"; remove the NCM chapters and the "Consultar" button from the cards; Process

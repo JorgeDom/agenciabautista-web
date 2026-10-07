@@ -41,6 +41,8 @@ export const about = {
   lead: `${site.name} es una empresa especializada en despachos aduaneros y soluciones logísticas, con ${YEARS_IN_BUSINESS} años de trayectoria en el comercio exterior paraguayo.`,
   body: 'Nuestro enfoque es claro: agilidad, transparencia y soluciones reales para importadores y exportadores.',
   caption: 'Con sede en Asunción, cubrimos todos los puertos del país.',
+  // The founder signs off the text above (title approved by the client, 2026-10-07).
+  signature: { name: 'Alfredo Bautista', role: 'Fundador y director · Despachante de Aduanas' },
   // Below the copy: a few of the main ports by name, then the rest in one line (client, 2026-10-07).
   ports: {
     label: 'Puertos principales',
