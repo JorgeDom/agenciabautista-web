@@ -11,9 +11,10 @@ Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge'
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `7085c8e` (2026-10-07), which
-  shipped session 4 (`046b5d4` shipped sessions 2 and 3). The team section is built but hidden.
-- **Not committed, not deployed:** session 5, the founder's sign-off in Quiénes somos.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `3ffc2d5` (2026-10-07), which
+  shipped session 5 (`7085c8e` shipped session 4, `046b5d4` sessions 2 and 3). The team section is
+  built but hidden.
+- **Not committed, not deployed:** session 6, Quiénes somos in three columns.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
   - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
   - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
@@ -253,7 +254,19 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-07, session 5: NOT committed
+### 2026-10-07, session 6: NOT committed
+
+- **Quiénes somos spacing.** More room between the paragraphs and the sign-off (`gap` 1.1 → 1.5rem).
+- **Three columns on desktop** (at Jorge's request): the text at the bottom of the left column, the
+  map in the middle with its caption under it, the "Puertos principales" list at the top of the
+  right column. One grid (`.panel`) now holds the copy, the map, the caption and the ports; the map
+  is no longer absolutely positioned. Map dots and names are scaled up (`--mark: 1.35`) because the
+  map is narrower. Between 901 and 1199px wide it falls back to two columns (text over ports, map
+  beside). Phones: text, ports, map, caption.
+- **Checked:** production build; screenshots at 1440×900 (start and end of the zoom), 1366×768,
+  1100×800, 2560×1440 and 390 wide.
+
+### 2026-10-07, session 5: shipped as `3ffc2d5`
 
 - **Founder in Quiénes somos.** At Jorge's request, the text now ends with a sign-off: a short sky
   rule, "Alfredo Bautista" and "Fundador y director · Despachante de Aduanas" (`about.signature`

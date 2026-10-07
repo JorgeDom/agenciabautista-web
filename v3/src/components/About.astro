@@ -26,43 +26,6 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
 ---
 <section class="about" id="nosotros" data-about>
   <div class="stage">
-    <svg class="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={alt}>
-      <!-- Paraguay is landlocked, so the map has no shore to end on: the neighbours fade out around it -->
-      <defs>
-        <radialGradient id="fade" gradientUnits="userSpaceOnUse" cx={W / 2} cy={H / 2} r={W / 2}>
-          <stop offset=".82" stop-color="#fff" />
-          <stop offset="1" stop-color="#fff" stop-opacity="0" />
-        </radialGradient>
-        <mask id="vignette" maskUnits="userSpaceOnUse" x="0" y="0" width={W} height={H}>
-          <rect width={W} height={H} fill="url(#fade)" />
-        </mask>
-      </defs>
-      <g mask="url(#vignette)">
-        <g class="world" style={zoom}>
-          <path class="land" d={land} />
-          <path class="borders" d={borders} />
-          <path class="coast" d={coast} />
-          <path class="py" d={paraguay} />
-          <path class="river" d={river} />
-        </g>
-      </g>
-      {names.map(n => (
-        <g style={follow(n.at)}><text class:list={['country', { home: n.home }]} text-anchor="middle">{n.name}</text></g>
-      ))}
-      {ports.map((p, i) => (
-        <g class:list={['port', { near: p.near }]} style={`--f:${(i / ports.length).toFixed(3)};${follow([p.x, p.y])}`}>
-          <title>{p.name}</title>
-          <circle r={p.near ? 2.8 : 3.6} />
-          {p.label !== 'none' && <text {...side[p.label ?? 'right']}>{p.name}</text>}
-        </g>
-      ))}
-      <g class="asu" style={follow(asuncion)}>
-        <circle class="pulse" r="4" />
-        <circle class="pin" r="4.5" />
-        <text {...side.left}>Asunción</text>
-      </g>
-    </svg>
-
     <div class="wrap panel">
       <div class="copy">
         <h2 class="h2">¿Quiénes somos?</h2>
@@ -72,14 +35,50 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
           <span class="sign-name">{about.signature.name}</span>
           <span class="sign-role">{about.signature.role}</span>
         </p>
-        <div class="ports">
-          <p class="ports-label"><span class="dot" aria-hidden="true"></span>{about.ports.label}</p>
-          <ul>{about.ports.names.map(n => <li>{n}</li>)}</ul>
-          <p class="more">{about.ports.more}</p>
-        </div>
+      </div>
+      <svg class="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label={alt}>
+        <!-- Paraguay is landlocked, so the map has no shore to end on: the neighbours fade out around it -->
+        <defs>
+          <radialGradient id="fade" gradientUnits="userSpaceOnUse" cx={W / 2} cy={H / 2} r={W / 2}>
+            <stop offset=".82" stop-color="#fff" />
+            <stop offset="1" stop-color="#fff" stop-opacity="0" />
+          </radialGradient>
+          <mask id="vignette" maskUnits="userSpaceOnUse" x="0" y="0" width={W} height={H}>
+            <rect width={W} height={H} fill="url(#fade)" />
+          </mask>
+        </defs>
+        <g mask="url(#vignette)">
+          <g class="world" style={zoom}>
+            <path class="land" d={land} />
+            <path class="borders" d={borders} />
+            <path class="coast" d={coast} />
+            <path class="py" d={paraguay} />
+            <path class="river" d={river} />
+          </g>
+        </g>
+        {names.map(n => (
+          <g style={follow(n.at)}><text class:list={['country', { home: n.home }]} text-anchor="middle">{n.name}</text></g>
+        ))}
+        {ports.map((p, i) => (
+          <g class:list={['port', { near: p.near }]} style={`--f:${(i / ports.length).toFixed(3)};${follow([p.x, p.y])}`}>
+            <title>{p.name}</title>
+            <circle r={p.near ? 2.8 : 3.6} />
+            {p.label !== 'none' && <text {...side[p.label ?? 'right']}>{p.name}</text>}
+          </g>
+        ))}
+        <g class="asu" style={follow(asuncion)}>
+          <circle class="pulse" r="4" />
+          <circle class="pin" r="4.5" />
+          <text {...side.left}>Asunción</text>
+        </g>
+      </svg>
+      <p class="caption">{about.caption}</p>
+      <div class="ports">
+        <p class="ports-label"><span class="dot" aria-hidden="true"></span>{about.ports.label}</p>
+        <ul>{about.ports.names.map(n => <li>{n}</li>)}</ul>
+        <p class="more">{about.ports.more}</p>
       </div>
     </div>
-    <p class="caption wrap">{about.caption}</p>
   </div>
 </section>
 
@@ -142,19 +141,19 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
   .asu text { font: 700 15px var(--display); fill: var(--navy); }
 
   /* ---- copy ---- */
-  .panel { padding-block: var(--section) 24px; }
-  .copy { display: grid; gap: 1.1rem; max-width: 30rem; }
+
+  .copy { display: grid; gap: 1.5rem; max-width: 30rem; }
   .h2 { color: var(--h); }
   .big { font-size: 1.25rem; color: var(--h); }
 
   /* the founder signs off the text above: a short rule, his name, his title */
-  .sign { display: grid; gap: .15rem; padding-left: 2.6rem; position: relative; margin-top: -.2rem; }
+  .sign { display: grid; gap: .25rem; padding-left: 2.6rem; position: relative; }
   .sign::before { content: ""; position: absolute; left: 0; top: .8em; width: 1.8rem; height: 2px; background: var(--sky-d); }
   .sign-name { font: 700 1.15rem/1.3 var(--display); font-stretch: 108%; color: var(--h); }
   .sign-role { font-size: .9rem; color: var(--muted); }
 
   /* the main ports by name; the dot matches the unnamed dots around Asunción on the map */
-  .ports { padding-top: 1.1rem; border-top: 1px solid var(--line); }
+  .ports { padding-top: 1.4rem; border-top: 1px solid var(--line); }
   .ports-label {
     display: flex; align-items: center; gap: .5rem;
     font: 700 .78rem/1 var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--sky-d);
@@ -165,26 +164,42 @@ const alt = 'Mapa del Paraguay con nuestra sede en Asunción' +
   /* the separator stays with the name before it, so no line starts with "·" */
   .ports li:not(:last-child)::after { content: " · "; color: var(--sky-d); white-space: normal; }
   .more { margin-top: .3rem; font-size: .95rem; color: var(--muted); }
-  .caption { font-size: .82rem; color: var(--muted); padding-bottom: 32px; }
+  .caption { font-size: .82rem; color: var(--muted); }
 
-  /* ---- wide screens: pinned stage, copy beside the map ---- */
+  /* ---- wide screens: a pinned stage in three columns: the text at the bottom left, the map in
+     the middle with its caption, the ports at the top right ---- */
   @media (min-width: 901px) {
     .about { height: 200vh; }
     .stage { position: sticky; top: 0; height: 100vh; }
-    /* map lives right of the copy column; the zoomed-in start fills it, the whole country fits it */
-    /* an absolutely positioned <svg> doesn't stretch between left/right, so width is explicit */
-    .stage { --mapl: max(44%, calc(var(--gutter) + 30rem + 48px)); }
-    .map { position: absolute; top: var(--header); left: var(--mapl); width: calc(100% - var(--mapl) - 16px); height: calc(100% - var(--header)); }
-    .panel { position: relative; z-index: 2; height: 100%; display: flex; align-items: center; padding-block: var(--header) 0; }
-    /* under the map, stopping short of the floating WhatsApp button */
-    .caption { position: absolute; z-index: 2; left: var(--mapl); right: 96px; bottom: 0; width: auto; padding-inline: 0; }
+    .panel {
+      height: 100%; display: grid; column-gap: clamp(24px, 3vw, 3rem);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, .8fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+      padding-block: calc(var(--header) + 24px) 28px;
+    }
+    .copy { grid-column: 1; grid-row: 1 / 3; align-self: end; }
+    /* the map is drawn at about two-thirds size in this column, so dots and names are scaled back up */
+    .map { grid-column: 2; grid-row: 1; width: 100%; height: 100%; min-height: 0; --mark: 1.35; }
+    .caption { grid-column: 2; grid-row: 2; padding-top: 8px; text-align: center; }
+    .ports { grid-column: 3; grid-row: 1 / 3; align-self: start; }
   }
+  /* between tablets and laptops three columns squeeze the text: two instead, the text over the
+     ports on the left, the map on the right */
+  @media (min-width: 901px) and (max-width: 1199px) {
+    .panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+    .copy { grid-row: 1; }
+    .ports { grid-column: 1; grid-row: 2 / 4; margin-top: 1.5rem; }
+    .map { grid-row: 1 / 3; }
+    .caption { grid-row: 3; }
+  }
+  /* phones and tablets: text, ports, then the map and its caption */
   @media (max-width: 900px) {
-    .stage { display: flex; flex-direction: column; }
-    .panel { order: 1; }
+    .panel { display: flex; flex-direction: column; gap: 24px; padding-block: var(--section) 32px; }
+    .ports { order: 1; }
+    .map { order: 2; }
+    .caption { order: 3; }
     /* wider than the screen so the country fills it; the map is still drawn at about half size,
        so dots and names are scaled back up */
-    .map { order: 2; width: 120%; margin: 24px -10% 0; --mark: 1.5; }
-    .caption { order: 3; }
+    .map { width: 120%; margin-inline: -10%; --mark: 1.5; }
   }
 </style>
