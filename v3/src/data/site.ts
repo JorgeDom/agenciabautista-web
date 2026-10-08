@@ -105,7 +105,7 @@ export const showTeam = team.published;
 export type Tone = 'sky' | 'card' | 'white' | 'deep';
 
 export const services: { title: string; detail: string; tone: Tone }[] = [
-  { title: 'Despachos aduaneros', detail: 'De importación y exportación.', tone: 'card' },
+  { title: 'Despachos aduaneros', detail: 'Importación y exportación.', tone: 'card' },
   { title: 'Clasificación arancelaria', detail: 'De mercancías, con la posición NCM que corresponde.', tone: 'sky' },
   { title: 'Licencias y permisos', detail: 'Tramitación de licencias, permisos y certificaciones.', tone: 'white' },
   { title: 'Asesoría técnica', detail: 'En normativas aduaneras.', tone: 'deep' },
@@ -139,7 +139,7 @@ export const sectors = [
   { name: 'Manufactura', img: '/img/sectores/manufactura.png', goods: 'Maquinaria, insumos industriales y plásticos' },
   { name: 'Tecnología', img: '/img/sectores/tecnologia.png', goods: 'Equipos informáticos y electrónica' },
   { name: 'Salud', img: '/img/sectores/salud.png', goods: 'Medicamentos e insumos médicos' },
-  { name: 'Agro', img: '/img/sectores/agro.png', goods: 'Granos, semillas y fertilizantes' },
+  { name: 'Agro', img: '/img/sectores/agro.png', goods: 'Granos, insumos agrícolas y nutrición animal' },
   { name: 'Repuestos', img: '/img/sectores/repuestos.png', goods: 'Autopartes y repuestos' },
   { name: 'Consumo masivo', img: '/img/sectores/consumo.png', goods: 'Alimentos, bebidas y cosmética' },
 ];

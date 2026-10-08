@@ -11,10 +11,10 @@ Last updated: 2026-10-08 (session 7). Written by Claude (AI assistant) at Jorge'
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `d6305db` (2026-10-07), which
-  shipped session 6 (`3ffc2d5` session 5, `7085c8e` session 4, `046b5d4` sessions 2 and 3). The
-  team section is built but hidden.
-- **Not committed, not deployed:** session 7, the map as the background of Quiénes somos.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `223134d` (2026-10-08), which
+  shipped session 7 (`d6305db` session 6, `3ffc2d5` session 5, `7085c8e` session 4, `046b5d4`
+  sessions 2 and 3). The team section is built but hidden.
+- **Not committed, not deployed:** session 8, two copy corrections.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
   - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
   - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
@@ -254,7 +254,14 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-08, session 7: NOT committed
+### 2026-10-08, session 8: NOT committed
+
+- **Copy.** Agro card: "Granos, insumos agrícolas y nutrición animal" (was "Granos, semillas y
+  fertilizantes"; no final period, like the other cards). Despachos aduaneros container:
+  "Importación y exportación." (the leading "De" removed). Both in `site.ts`.
+- **Checked:** production build output.
+
+### 2026-10-08, session 7: shipped as `223134d`
 
 Asked for: the map was too small with too much empty space; make it the background of the section,
 keep the zoom-out on scroll and the position of the texts.
