@@ -7,14 +7,14 @@ each session. Read sections 1 to 4 before touching anything; add to section 7 wh
 > is written to be safe to commit: no client messages, no personal details beyond what the live
 > site already shows. Keep it that way, and see the warning about the team draft in section 4.
 
-Last updated: 2026-10-07 (session 3). Written by Claude (AI assistant) at Jorge's request.
+Last updated: 2026-10-08 (session 7). Written by Claude (AI assistant) at Jorge's request.
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `3ffc2d5` (2026-10-07), which
-  shipped session 5 (`7085c8e` shipped session 4, `046b5d4` sessions 2 and 3). The team section is
-  built but hidden.
-- **Not committed, not deployed:** session 6, Quiénes somos in three columns.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `d6305db` (2026-10-07), which
+  shipped session 6 (`3ffc2d5` session 5, `7085c8e` session 4, `046b5d4` sessions 2 and 3). The
+  team section is built but hidden.
+- **Not committed, not deployed:** session 7, the map as the background of Quiénes somos.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
   - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
   - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
@@ -254,7 +254,25 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-07, session 6: NOT committed
+### 2026-10-08, session 7: NOT committed
+
+Asked for: the map was too small with too much empty space; make it the background of the section,
+keep the zoom-out on scroll and the position of the texts.
+
+- **Map as background (desktop).** The SVG now fills the pinned stage under the header
+  (absolutely positioned, `z-index: 0`), nudged 3% right of centre; the text, caption and ports
+  sit over it in the same three columns. A gradient overlay (`.stage::after`) dissolves the map
+  into the page towards both sides and the bottom so the text stays legible; the old round mask is
+  now phones only (`.fade`). Neighbours are drawn one viewBox-width to each side
+  (`clipExtent` in `paraguaymap.ts`) so the wide stage never shows where the land stops. The dot
+  and label scale-up for the narrow column (`--mark: 1.35`) was removed.
+- **901–1199px:** the map keeps to the right 60% with its own fade, the text on the left.
+- **Phones:** reordered at Jorge's request: text, then the map and its caption, then the ports list.
+- **Checked:** production build; screenshots at 1440×900 (start and end of the zoom), 1366×768,
+  1100×800, 2560×1440 and 390 wide. Text sizes were left as they were; nothing needed shrinking.
+- Files: `About.astro`, `paraguaymap.ts`, this file.
+
+### 2026-10-07, session 6: shipped as `d6305db`
 
 - **Quiénes somos spacing.** More room between the paragraphs and the sign-off (`gap` 1.1 → 1.5rem).
 - **Three columns on desktop** (at Jorge's request): the text at the bottom of the left column, the

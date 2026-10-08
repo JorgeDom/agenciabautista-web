@@ -19,10 +19,11 @@ const obj = topo.objects.countries;
 const py = feature(topo, obj).features.find(f => f.id === '600')!;
 const background = coarse as unknown as World;
 
-// Paraguay fills the viewBox; whatever falls outside it is never shown, so it isn't shipped.
+// Paraguay fills the viewBox. On desktop the map is the section's background, wider than tall, so
+// the neighbours are drawn one viewBox-width beyond each side; above and below are never shown.
 const projection = geoMercator()
   .fitExtent([[PAD, PAD], [W - PAD, H - PAD]], py)
-  .clipExtent([[0, 0], [W, H]]);
+  .clipExtent([[-W, 0], [2 * W, H]]);
 const path = geoPath(projection);
 const r1 = (s: string | null) => (s ?? '').replace(/(\d+\.\d)\d+/g, '$1'); // trim decimals
 
