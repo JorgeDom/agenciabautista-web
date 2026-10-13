@@ -7,14 +7,20 @@ each session. Read sections 1 to 4 before touching anything; add to section 7 wh
 > is written to be safe to commit: no client messages, no personal details beyond what the live
 > site already shows. Keep it that way, and see the warning about the team draft in section 4.
 
-Last updated: 2026-10-08 (session 7). Written by Claude (AI assistant) at Jorge's request.
+Last updated: 2026-10-13 (session 10). Written by Claude (AI assistant) at Jorge's request.
 
 ## 1. Where things stand
 
-- **Live:** `https://agenciabautista-web.pages.dev` serves commit `223134d` (2026-10-08), which
-  shipped session 7 (`d6305db` session 6, `3ffc2d5` session 5, `7085c8e` session 4, `046b5d4`
-  sessions 2 and 3). The team section is built but hidden.
-- **Not committed, not deployed:** session 8, two copy corrections.
+- **Live:** `https://agenciabautista-web.pages.dev` serves commit `dc85643` (2026-10-08), which
+  shipped session 8 (`223134d` session 7, `d6305db` session 6, `3ffc2d5` session 5, `7085c8e`
+  session 4, `046b5d4` sessions 2 and 3). The team section is built but hidden.
+- **Repo cleaned up on 2026-10-13 (session 10), not committed yet:** only the approved site is
+  left, and it moved from `v3/` to the repo root. **The Cloudflare Pages root directory has to
+  change from `v3` to the repo root** (Jorge does this in the dashboard); until then every build
+  of the new layout fails and the live site stays on `dc85643`.
+- **Next goal: publish on the client's own domain,** `agenciabautista.com.py`. Investigated on
+  2026-10-08 (section 9); a questionnaire for the client is drafted there, not confirmed as sent.
+  Nothing has been changed on the domain, its hosting or its e-mail.
 - **Still waiting on the client (Mateo Bautista, the agency's manager):**
   - Where PAKSA, Puerto San José (Empedril) and Puerto Seguro Terrestre are, to add their dots.
   - Whether a specific point in the Chaco should go on the map (he only said "el Chaco").
@@ -26,22 +32,39 @@ Last updated: 2026-10-08 (session 7). Written by Claude (AI assistant) at Jorge'
 
 ## 2. The repo
 
+The repo holds one thing: the approved site, at the repo root. Astro 7, static output, no UI
+framework. Until 2026-10-13 it lived in `v3/`, next to two older design variants; older entries
+in section 7 use those paths.
+
 | Path | What it is |
 |---|---|
-| `v3/` | **The live site.** Astro 7, static output, no UI framework. Everything below refers to it. |
-| `index.html`, `main.js`, `styles.css`, `assets/` | First design variant. Not deployed, not maintained. |
-| `v2/` | Second design variant. Not deployed, not maintained. |
-| `v3/src-images/`, `v3/globe-36.gif` | Original images and video that the optimised assets were made from. |
+| `src/` | The site's source: pages, components, data, styles. |
+| `public/` | Files served as they are: images, the hero frames, `_headers`, icons, `og-image.jpg`. |
+| `package.json`, `package-lock.json`, `astro.config.mjs`, `tsconfig.json` | Build configuration. |
+| `HANDOFF.md` | This file. Not part of the site. |
 
-The old variants still contain old copy (including "E.A.S." and the wrong founding year, 1976).
-Leave them alone unless Jorge asks.
+**Removed on 2026-10-13, still in the git history** (last present in commit `dc85643`; get one
+back with `git show dc85643:<path> > <file>`):
 
-**Deploy.** Pushing to `main` publishes: the pushes of `7a2a634` and `046b5d4` were live about
-40 and 50 seconds later.
-The Cloudflare Pages settings are not visible from the repo; `astro.config.mjs` expects a
-`SITE_URL` environment variable there until the real domain (`agenciabautista.com.py`) is connected.
+| Old path | What it was |
+|---|---|
+| `index.html`, `main.js`, `styles.css`, `assets/` | First design variant. |
+| `v2/` | Second design variant. |
+| `v3/globe-36.gif` | Source of the globe animation (recipe in section 6). |
+| `v3/src-images/hero-original.mp4` | Source of the hero frames in `public/hero/`. |
+| `v3/src-images/camion-original.png`, `spreader-original.png`, `grua-original.png` | Originals of the truck and spreader images; the crane was never used. |
+| `v3/src-images/sectores/` | Copies of the sector images, plus an unused `puertas.png`. |
+| `v3/public/img/logo-agencia-bautista-navy.png` | Navy logo; only the second variant used it. |
+| The brochure PDF, the first mock-up, a duplicate logo | Client source material, not part of the site. |
 
-**Files that matter (under `v3/`):**
+**Deploy.** Pushing to `main` publishes, usually within a minute; the push of `dc85643` took
+about five and a half minutes, so wait before assuming a deploy failed.
+The Cloudflare Pages settings are not visible from the repo. They must be: root directory empty
+(the repo root; it was `v3` until 2026-10-13), build command `npm run build`, output directory
+`dist`. `astro.config.mjs` expects a `SITE_URL` environment variable there until the real domain
+(`agenciabautista.com.py`) is connected.
+
+**Files that matter:**
 
 | File | Why |
 |---|---|
@@ -59,7 +82,7 @@ hidden], Rubros (`Sectors.astro`, anchor `#sectores`), Contacto + footer.
 
 **Run and check**
 
-- `cd v3`, then `npm run dev` (port 4321) or `npm run build` (output in `v3/dist`).
+- From the repo root: `npm run dev` (port 4321) or `npm run build` (output in `dist`).
 - Start every session with `git fetch` and check for "behind". On 2026-10-06 the local clone was
   one commit behind GitHub, so local and live looked different until it was pulled.
 - Astro refuses to start a second dev server for the same project. If one is already running,
@@ -198,7 +221,7 @@ Where each answer lands in the code:
 | 1 | `ports` in `site.ts` (name + [longitude, latitude]) |
 | 2 | `about.caption` in `site.ts` |
 | 3 to 6 | `team` in `site.ts`; `published: true` ships the section. The fallback is one sentence added to `about` |
-| 7 | the photo into `v3/public/img/`, its path in `team.photo` |
+| 7 | the photo into `public/img/`, its path in `team.photo` |
 | 8 | `reasons` in `site.ts` |
 | 9 | `WHATSAPP` and `WHATSAPP_TEXT` at the top of `site.ts` |
 | 10 | `emails` in `site.ts` (the first one gets the button) |
@@ -226,7 +249,8 @@ Paraphrased from the client's reply. Applied on 2026-10-07 (session 3), except t
 ## 6. Recipes
 
 **Globe animation** (`public/img/globo.webp`, `globo-quieto.webp`), made from `v3/globe-36.gif`
-(800×600, 165 frames, white lines on flat blue `rgb(5,106,201)`) with `sharp`:
+(800×600, 165 frames, white lines on flat blue `rgb(5,106,201)`) with `sharp`. The GIF is no longer
+in the repo; section 2 says how to get it back from the history:
 
 1. Resize the animated GIF to 640px wide and take the centre 480×480 of every frame.
 2. Alpha per pixel from the red channel: `a = (R - 14) / 236`, zero below 0.05, then `a^0.7`;
@@ -254,7 +278,35 @@ correction. An HTML page rendered by headless Chrome and saved as JPEG (quality 
 
 Newest first. One entry per working session: what was asked, what changed, and its status.
 
-### 2026-10-08, session 8: NOT committed
+### 2026-10-13, session 10: repo clean-up, not committed yet
+
+Jorge asked to leave only the approved site in the repo, with nothing that the site does not
+need to run on Cloudflare, and to move it from `v3/` to the repo root.
+
+- **Deleted:** the first and second design variants, the brochure PDF, the first mock-up, a
+  duplicate logo, every original image and video, and the unused navy logo. The full list, and
+  how to get a file back from the history, is in section 2. The tracked files went
+  from about 70 MB to about 19 MB.
+- **Moved:** everything in `v3/` to the repo root, with no change to the files themselves.
+- **Edited:** `package.json` and `package-lock.json` (name `agenciabautista-web`, was
+  `agenciabautista-web-v3`); comments in `src/data/site.ts` and `src/styles/global.css` that
+  pointed at the removed files. No change to what the site shows.
+- **Checked:** a copy holding only the tracked files, installed with `npm ci` and built with
+  `npm run build` (Node 22.15), builds without errors. Its `index.html` is identical to the live
+  page once the site address is set aside, its file list matches the previous build except for
+  the navy logo, and every image the page and `site.ts` point at is in the output (both sets of
+  96 hero frames included). `npm run build` also works in the repo folder itself after the move.
+- **Not checked:** the build on Cloudflare itself, which needs the new root directory first.
+- **Not done:** the files are still in the git history, which is public. Removing them from
+  there means rewriting history and force-pushing; Jorge has not asked for that.
+- **Jorge has to do:** in Cloudflare Pages, set the root directory to the repo root (it was `v3`).
+
+### 2026-10-08, session 9: investigation only, nothing to deploy
+
+- Looked up the public records of `agenciabautista.com.py` and wrote section 9: what they show,
+  two ways to connect the domain, and a short questionnaire for the client. No site changes.
+
+### 2026-10-08, session 8: shipped as `dc85643`
 
 - **Copy.** Agro card: "Granos, insumos agrícolas y nutrición animal" (was "Granos, semillas y
   fertilizantes"; no final period, like the other cards). Despachos aduaneros container:
@@ -417,3 +469,98 @@ At the end of a session: add an entry at the top of section 7 (date, what was as
 changed, files, and whether it was committed and deployed), update section 1 and the table in
 section 4, and change the "Last updated" date. Record what was verified and how, and say plainly
 what was not checked.
+
+## 9. The client's domain: agenciabautista.com.py
+
+Goal: serve the site from the client's domain instead of `agenciabautista-web.pages.dev`.
+**Nothing has been changed yet; this is investigation only.** Everything below was read from public
+records on 2026-10-08 (`nslookup` against 8.8.8.8 and `curl`) and may have changed: re-check
+before acting.
+
+### What the public records show
+
+| Record | Value |
+|---|---|
+| Nameservers | `ns1.hostingparaguay.cloud`, `ns2.hostingparaguay.cloud` |
+| A (bare domain, `www`, `mail`, `ftp`) | `216.158.227.186` (the same address as the nameservers; network: Interserver, USA) |
+| MX | Priority 0, pointing at the bare domain itself |
+| SPF | `v=spf1 ip4:216.158.227.186 a mx include:spf-c.mailbaby.net -all` |
+| DMARC | `v=DMARC1; p=reject; aspf=s; adkim=s; sp=reject` |
+| DKIM | A `default._domainkey` record exists |
+| SOA | Serial `2026100600`; contact field is the hosting account, not a person |
+
+What that means:
+
+- **The domain is on shared hosting at a Paraguayan reseller, "Hosting Paraguay"**
+  (`hostingparaguay.cloud`), on a LiteSpeed/cPanel-style server. The account is active: the
+  certificate was issued on 2026-08-25 and the zone was touched on 2026-10-06.
+- **The domain does not show a website. Its home page redirects to `login.php`,** so some
+  web system with a login lives at the root of the domain. That file was last modified on
+  2026-01-09. The login page itself did not respond when requested (it timed out), so what the
+  system is, and whether it is in use, is unknown. **This has to be answered before the domain is
+  pointed anywhere.**
+- **The company e-mail runs on the same server** (the site lists `operaciones@` and the
+  manager's address on this domain; the MX points at the bare domain). Moving the bare domain
+  without dealing with the MX first would cut incoming mail.
+- **Mail is set up strictly** (DMARC `reject` with strict alignment). Any new sender, for
+  example a contact form or a new mail service, must be added to SPF and DKIM or its mail will be
+  rejected.
+- **NIC.py registration.** The lookup at `https://www.nic.py/consultdompy.php` has a captcha, so
+  Jorge ran it by hand on 2026-10-08: the **technical contact is a named individual with a Gmail
+  address**, not the hosting company. His name and address are kept out of this file (public
+  repo); Jorge has them, and question 4 of the questionnaire he sends names him. He is the best
+  lead to whoever set up the hosting and the login system. Still unknown: the titular, the expiry
+  date, and whether that Gmail address is also the one NIC.py accepts change requests from.
+  NIC.py has no accounts: changes are requested with the domain plus its registered e-mail.
+
+### Two ways to connect the domain
+
+| | A. Keep DNS where it is (lighter) | B. Move DNS to Cloudflare (full control) |
+|---|---|---|
+| What changes | In the current hosting's DNS: `www` becomes a CNAME to `agenciabautista-web.pages.dev`; the bare domain's home page redirects to `www` instead of to `login.php` | Nameservers changed at NIC.py to Cloudflare; every record recreated there first |
+| Needs | Access to the hosting panel (or the reseller's help) | The NIC.py registered e-mail, plus a full copy of the current records |
+| E-mail | Untouched | Keeps working only if MX, SPF, DKIM and DMARC are copied exactly, with the MX on a `mail.` host |
+| The login system | Keeps working at `agenciabautista.com.py/login.php` | Has to stay reachable: bare domain kept on the old server, or the system moved to a subdomain |
+| Result | Site at `www.agenciabautista.com.py` | Site at the bare domain and `www` |
+
+Recommendation (Claude's, pending the client's answers): **start with A.** It needs no change at
+NIC.py, cannot break the e-mail, and leaves the login system where it is. B can follow later.
+
+For either route: add the custom domain in the Cloudflare Pages project, then set `SITE_URL` there
+to the final address (`https://www.agenciabautista.com.py` for route A) so canonical links and
+link previews use it; `astro.config.mjs` falls back to the bare domain.
+
+### Questionnaire for the client
+
+Drafted 2026-10-08, short version of the one used for Barreto y Asociados. Not confirmed as sent.
+In this copy the technical contact's name and e-mail in question 4 are replaced by placeholders.
+
+```text
+SITIO WEB: PREGUNTAS PARA PUBLICARLO EN AGENCIABAUTISTA.COM.PY
+
+Para publicar el sitio en agenciabautista.com.py sin afectar el correo ni lo que hoy funciona en el dominio, necesito algunos datos. Respondan lo que sepan; si algo no lo saben, alcanza con un «no sé».
+
+El dominio
+
+1. ¿Quién registró el dominio y a nombre de quién está (la empresa o una persona)?
+2. ¿Con qué correo electrónico se registró en NIC Paraguay? Es el dato más importante: NIC Paraguay solo acepta cambios pedidos con ese correo. ¿Siguen teniendo acceso a esa casilla?
+3. ¿Quién paga la renovación del dominio y a qué correo llega el aviso?
+4. En NIC Paraguay figura como contacto técnico del dominio [nombre] ([correo]). ¿Lo conocen? ¿Es quien armó el hosting o el sistema? ¿Siguen en contacto con él?
+
+El hosting y el sistema
+
+5. Hoy agenciabautista.com.py abre una pantalla de inicio de sesión. ¿Qué sistema es, quién lo usa y quién lo hizo? ¿Tiene que seguir funcionando?
+6. El dominio está alojado en Hosting Paraguay. ¿Lo contrataron ustedes? ¿Quién lo paga, y tienen acceso al panel de control (cPanel)? Si lo maneja otra persona, ¿me pasan su contacto?
+
+El correo
+
+7. ¿Cuántas casillas @agenciabautista.com.py están en uso y de quiénes son?
+8. ¿Cómo leen el correo (web, Outlook, celular) y a quién le piden una casilla nueva o un cambio de contraseña?
+
+Otros
+
+9. ¿Hay algo más que dependa del dominio (un sistema, la facturación, el perfil de Google de la empresa)?
+10. ¿Quién autoriza los cambios?
+
+Mientras tanto, por favor no cancelen ni cambien nada del hosting actual: el correo de la empresa funciona en ese mismo servidor.
+```

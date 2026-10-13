@@ -147,18 +147,19 @@ export const sectors = [
 /**
  * Images for the animated scenes. Drop the file in public/img/ and set its path here;
  * while a value is empty the page shows a placeholder (or the drawn fallback).
+ * The originals these were made from are not in the repo any more: see HANDOFF.md, section 2.
  */
 export const media = {
-  spreader: '/img/spreader.webp', // container spreader (gripper), front elevation (original in v3/src-images/)
-  truck: '/img/camion.webp',  // top-down truck with container, cab to the right (original in v3/src-images/)
-  // spinning globe beside "¿Por qué elegirnos?": v3/globe-36.gif (white lines on flat blue) redrawn as
+  spreader: '/img/spreader.webp', // container spreader (gripper), front elevation
+  truck: '/img/camion.webp',  // top-down truck with container, cab to the right
+  // spinning globe beside "¿Por qué elegirnos?": a GIF of white lines on flat blue redrawn as
   // brand-blue lines on a transparent background, 480px animated WebP at the original 25 fps
   globe: '/img/globo.webp',
   globeStill: '/img/globo-quieto.webp', // its first frame, for visitors who prefer reduced motion
 };
 
 /**
- * Hero ship video as frames (from src-images/hero-original.mp4, every 2nd frame → 96 WebP).
+ * Hero ship video as frames (from the original video, every 2nd frame → 96 WebP).
  * lg = 1280px wide for desktop, sm = 720px for phones. Regenerate both if the video changes.
  */
 export const heroFrames = { count: 96, lg: '/hero/lg', sm: '/hero/sm' };
